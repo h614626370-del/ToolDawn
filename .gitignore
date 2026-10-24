@@ -1,0 +1,16 @@
+node_modules/
+.nuxt/
+.output/
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+.env
+.env.*
+!.env.example
+*.log
+.runtime/
+test-results/
+infra/secrets/

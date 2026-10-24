@@ -1,0 +1,74 @@
+name: Checks
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.12.8"
+          python-version: "3.12"
+      - run: uv sync --locked --group dev
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run pytest
+      - run: uv run alembic upgrade head --sql
+        env:
+          TOOLDAWN_DATABASE_URL: postgresql+asyncpg://ci:ci@localhost/tooldawn
+
+  postgres:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: tooldawn_test
+          POSTGRES_USER: tooldawn
+          POSTGRES_PASSWORD: local_ci_only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U tooldawn -d tooldawn_test"
+          --health-interval 5s --health-timeout 3s --health-retries 10
+    env:
+      TOOLDAWN_DATABASE_URL: postgresql+asyncpg://tooldawn:local_ci_only@127.0.0.1:5432/tooldawn_test
+      TOOLDAWN_TEST_DATABASE_URL: postgresql+asyncpg://tooldawn:local_ci_only@127.0.0.1:5432/tooldawn_test
+    defaults:
+      run:
+        working-directory: services/api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.12.8"
+          python-version: "3.12"
+      - run: uv sync --locked --group dev
+      - run: uv run alembic upgrade head
+      - run: uv run python -m tooldawn.cli seed-catalog
+      - run: uv run python -m tooldawn.cli seed-catalog
+      - run: uv run python -m tooldawn.cli install-text-tools
+      - run: uv run pytest tests/test_postgres.py tests/test_auth_postgres.py tests/test_admin_postgres.py tests/test_billing_postgres.py tests/test_ai_postgres.py
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run build

@@ -1,0 +1,25 @@
+Use case: ui-mockup.
+Create an exceptionally polished desktop screenshot of the PUBLIC ToolDawn main-domain TOOL DIRECTORY HOMEPAGE. This is a navigation portal to separate tools, NOT an editing workspace, NOT a logged-in dashboard. All labels in Simplified Chinese except brand ToolDawn. Flat front-on 1536x1024 screenshot, no device frame.
+
+Design: stylish, clear, welcoming public directory. Neutral light stone gray background #E5E6E5, charcoal #252727 header and typography, warm yellow #F1D36A active accents, restrained coral and green in category icons. Main background visibly gray, never pure white. Compact crisp Chinese sans-serif typography, 6px card radii, thin gray borders, minimal shadows, original elegant visual identity. Avoid beige/brown/orange-dominated palette. Navigation itself is the product.
+
+Layout: full-width slim charcoal header, ToolDawn logo prominent at left with simple small yellow sunrise mark. Header links '工具导航', '热门工具', '最近更新'; right '中文' globe, quiet '登录' link. No sidebar dashboard, no account avatar, no personal files, no recent user history. Centered max-width 1280px directory body.
+
+At top of content, a modest 30px heading '工具导航', on the same row a spacious central search field '搜索工具名称或用途' with search icon and compact yellow '搜索' command. No marketing hero or big slogan. Under this a full-width flat category navigation bar with small line icons and exact labels '全部工具', '图片处理', '文字写作', '日常生活', '实用工具'. Selected category has a short yellow underline. A fine divider separates navigation from directory.
+
+Below: small heading '热门工具' with tiny flame icon, quiet right-aligned '查看全部' link. Two rows of FOUR consistent compact TOOL DIRECTORY LINK CARDS. Each entry represents a destination page, with clear small colored icon, bold short Chinese tool name, at most one brief description, subtle category tag and a tiny northeast arrow at upper right. Never render input forms or an actual working editor inside the cards.
+Eight tools:
+'照片风格转换' / '将照片转成不同艺术风格' / '图片'
+'智能抠图' / '去除背景，保留清晰主体' / '图片'
+'文章润色' / '调整表达、语气与行文' / '写作'
+'食物分析' / '识别食物，了解营养信息' / '生活'
+'图片压缩' / '减小体积，保留画面细节' / '图片'
+'生日祝福' / '为不同的人写一句祝福' / '生活'
+'格式转换' / '常见图片格式快速互转' / '实用'
+'文案改写' / '用另一种方式表达想法' / '写作'
+
+Only the top four entries have compact horizontal preview bands occupying no more than a quarter of each card: bright mountain photo versus painting, a generic unbranded blue shoe cutout on checkerboard, a tasteful readable short Chinese document snippet, and a food bowl photograph. Other four cards use compact icons only, shorter height. Visual previews serve navigation, not a large image gallery.
+
+Below directory, second section '按分类浏览' in unframed layout with FOUR horizontal icon and text category columns with counts: '图片处理 12', '文字写作 8', '日常生活 6', '实用工具 10'. Each column has a subtle vertical divider instead of a big container. Lower section heading '最近更新', small new tag, a row of three compact horizontal tool links including '图片放大', '标题生成', '二维码生成'. Bottom footer small ToolDawn wordmark and '关于', '反馈', '隐私政策' links.
+
+Make navigation compact and highly scannable, intentional typographic hierarchy, ample balanced whitespace while not a blank white page. Actual public useful directory, no AI chat, no image editing canvas, no before-after slider controls, no upload actions, no style picker, no credits, no fabricated analytics, no workspace sidebar, no file management. No enormous headline, marketing slogan, bokeh, gradients, glassmorphism, nested cards, huge thumbnails or promotional banner. Sharp realistic accurate Chinese text. This is a sophisticated deployable-looking public tool navigation design concept.

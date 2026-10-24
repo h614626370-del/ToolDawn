@@ -1,0 +1,18 @@
+Use case: ui-mockup
+Asset type: high fidelity Chinese desktop tool-directory interface reference, flat front-on screenshot, 1536x1024, no browser frame.
+Primary request: Redesign ToolDawn to feel considered, friendly and naturally usable, with mature Chinese typography, balanced visual rhythm and tactile but restrained surfaces. The main domain is a PUBLIC TOOL DIRECTORY, not a dashboard and not a landing page.
+
+Brand and palette: compact charcoal #252b2d navigation, small yellow sunrise symbol next to clear ToolDawn wordmark. Cool neutral gray #f0f2f3 main canvas, white tool entry surfaces, sunflower yellow #f4cc3b search action, sage green, coral, blue and lilac used only for category icons. No cream, tan, orange or purple-dominated theme.
+Typography: refined Noto Sans SC, absolutely no Song/Ming/serif Chinese characters. Medium-weight compact section headings, readable regular body text, nuanced muted secondary text. All text in Simplified Chinese except ToolDawn and actual tool brands.
+
+Layout: slim full-width charcoal header, prominent ToolDawn left, links 工具导航 / 全部工具 / 最近更新, right bookmark icon 我的收藏 and user icon 登录. Centered content width around 1200px.
+An unframed compact intro row: left h1 工具导航 with supporting line 找到工具，把事情做好。; right spacious search box 搜索工具名称或用途 and yellow 搜索 button. No giant headline, no marketing hero.
+Below, a quiet unframed horizontal category selector with icons: 全部工具 / 图片处理 / 文字写作 / 日常生活 / 实用工具. The active option uses a pale yellow small rectangular background with 6px corners. Do not underline the full width of each tab.
+Section heading 精选工具, subdued right link 查看全部. Four featured cards in first row, consistent 6px corners and extremely subtle neutral borders, soft small shadow, generous but practical padding. Small horizontal media previews. One recognizable lakeside mountain photo; one unbranded pastel green running shoe on pale green and checkerboard background; a beautiful tiny Chinese document preview; one bright colorful healthy meal photo. Never use a red sneaker or strong red media. Under each preview a clean small tinted icon, name and brief muted description:
+照片风格转换 / 给熟悉的风景，换一种表达
+智能抠图 / 去掉背景，留下清晰主体
+文字润色 / 理顺表达，让每句话恰到好处
+食物分析 / 从一餐开始，了解食物与营养
+Each entry has a small low-contrast 开发中 status and category label, a subtle bookmark control. No editor controls in tool entries.
+Second row four compact icon-led links: 图片压缩 / 生日祝福 / 格式转换 / 文案改写. Clear hierarchy rather than repetitive hard outlines. Third section 按分类浏览: four open horizontal category links separated only by whitespace, with colored outlined icons and real small counts 5 / 2 / 2 / 3. Fourth section 现在就能用: compact actual external-tool links Squoosh / Photopea / Excalidraw / JSON Editor Online with small green available dots. No false tool availability, no charts or fabricated metrics.
+Restrained footer ToolDawn and 关于 / 隐私说明. Content reaches close to bottom of viewport, next section visible. Charming through typography, subtle surface depth, accurate spacing and thoughtful real content, not decoration. Avoid giant blank gaps, nested cards, oversized radii, sidebar, gradient, bokeh, mascots, advertising blocks, marketing copy, huge illustrations. Render legible consistent Chinese text with professional alignment and no overlaps.
