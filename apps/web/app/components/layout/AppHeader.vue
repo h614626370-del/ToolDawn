@@ -15,7 +15,7 @@ onMounted(async () => {
   <header class="site-header">
     <div class="container header-inner">
       <NuxtLink to="/" class="brand" :aria-label="$t('ToolDawn 首页')">
-        <AppIcon name="sun" :size="29" /><span>{{ site.site_name }}</span>
+        <SiteLogo :variant="site.site_logo" :size="38" /><span>{{ site.site_name }}</span>
       </NuxtLink>
       <nav class="primary-nav" :aria-label="$t('主导航')">
         <NuxtLink to="/" :class="{ active: route.path === '/' }">{{ $t('工具导航') }}</NuxtLink>
@@ -23,6 +23,7 @@ onMounted(async () => {
         <NuxtLink to="/tools?sort=recent" class="nav-recent">{{ $t('最近更新') }}</NuxtLink>
       </nav>
       <div class="header-actions">
+      <StyleSwitcher v-if="route.path === '/' || route.path === '/tools'" />
       <LanguageSelect />
       <NuxtLink to="/tools?saved=1" class="saved-link" :class="{ active: route.query.saved === '1' }">
         <AppIcon name="bookmark" :size="17" /><span>{{ $t('我的收藏') }}</span>

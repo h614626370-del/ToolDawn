@@ -37,6 +37,7 @@ class AuthRepository:
             )
             if (
                 challenge is None
+                or challenge.purpose != "login"
                 or challenge.email != email
                 or challenge.consumed
                 or challenge.expires_at <= now

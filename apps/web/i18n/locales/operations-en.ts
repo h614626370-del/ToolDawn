@@ -68,7 +68,6 @@ export default {
   '操作者': 'Actor',
   '新增模型账号': 'Add model account',
   '新增用户': 'New users',
-  '新密码（至少 12 位）': 'New password (at least 12 characters)',
   '新建工单': 'New ticket',
   '昵称': 'Display name',
   '暂无使用记录': 'No usage yet',

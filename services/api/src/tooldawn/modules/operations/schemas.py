@@ -29,6 +29,7 @@ class ToolOverride(StrictInput):
 
 
 class RuntimeConfig(StrictInput):
+    site_logo: Literal["default", "speed", "heritage", "signature", "street"] = "default"
     site_name: str = Field(default="ToolDawn", min_length=1, max_length=60)
     announcement: str = Field(default="", max_length=500)
     contact_email: str = Field(default="", max_length=254)
@@ -72,6 +73,19 @@ class RuntimeConfig(StrictInput):
 
 class ConfigInput(RuntimeConfig):
     revision: int = Field(ge=0)
+
+
+class PaymentConfigInput(StrictInput):
+    revision: int = Field(ge=0)
+    credit_packages: list[CreditPackage] = Field(max_length=20)
+    stripe_secret_key: SecretStr | None = None
+    stripe_webhook_secret: SecretStr | None = None
+
+    @model_validator(mode="after")
+    def unique_packages(self):
+        if len({p.id for p in self.credit_packages}) != len(self.credit_packages):
+            raise ValueError("Package IDs must be unique")
+        return self
 
 
 class AccountInput(StrictInput):

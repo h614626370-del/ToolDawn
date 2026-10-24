@@ -158,10 +158,16 @@ class AdminRepository:
         if record.revision != revision:
             raise HTTPException(409, "记录已被其他操作更新，请刷新列表后重新编辑。")
 
-    async def users(self, q: str, offset: int, limit: int) -> AdminUserPage:
+    async def users(
+        self, q: str, offset: int, limit: int, role=None, disabled=None
+    ) -> AdminUserPage:
         query = select(UserRecord)
         if q.strip():
             query = query.where(UserRecord.email.icontains(q.strip(), autoescape=True))
+        if role:
+            query = query.where(UserRecord.role == role)
+        if disabled is not None:
+            query = query.where(UserRecord.disabled == disabled)
         async with self.sessions() as db:
             total = await db.scalar(select(func.count()).select_from(query.subquery()))
             records = (

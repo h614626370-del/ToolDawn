@@ -15,7 +15,7 @@ export default defineNuxtConfig({
     vueI18n: './i18n.config.ts',
   },
   components: [{ path: '~/components', pathPrefix: false }],
-  css: ['~/assets/css/main.css', '~/assets/css/auth.css', '~/assets/css/admin.css', '~/assets/css/billing.css', '~/assets/css/workspace.css', '~/assets/css/operations.css'],
+  css: ['~/assets/css/main.css', '~/assets/css/auth.css', '~/assets/css/admin.css', '~/assets/css/billing.css', '~/assets/css/workspace.css', '~/assets/css/operations.css', '~/assets/css/directory-styles.css', '~/assets/css/admin-themes.css'],
   vite: { plugins: [tailwindcss()] },
   runtimeConfig: {
     apiBase: 'http://127.0.0.1:8000',
@@ -26,6 +26,7 @@ export default defineNuxtConfig({
     '/admin/**': { ssr: false, headers: { 'cache-control': 'no-store' } },
     '/account/**': { headers: { 'cache-control': 'no-store' } },
     '/login': { headers: { 'cache-control': 'no-store' } },
+    '/forgot-password': { headers: { 'cache-control': 'no-store' } },
   },
   app: {
     head: {
@@ -33,7 +34,6 @@ export default defineNuxtConfig({
       title: 'ToolDawn · 发现好工具',
       meta: [{ name: 'theme-color', content: '#252b2d' }],
       link: [
-        { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
         { rel: 'preload', href: '/fonts/tooldawn-sans-sc.woff2', as: 'font', type: 'font/woff2', crossorigin: 'anonymous' },
       ],
     },

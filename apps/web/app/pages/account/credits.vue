@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import type { BillingPage, CreditEntry, CreditPackage, PaymentOrder } from '~/types/billing'
+import type { CheckoutResult, PaymentMethod } from '~/types/payment-provider'
 import { authError } from '~/composables/useAuth'
 definePageMeta({ middleware: 'account' })
 const { t } = useI18n()
 useSeoMeta({ title: () => `${t('积分与充值')} · ToolDawn`, robots: 'noindex, nofollow' })
 const auth = useAuth()
 const route = useRoute()
-const { money } = useBillingFormat()
+const { money, date } = useBillingFormat()
 const balance = ref(0)
 const packages = ref<{ enabled: boolean; items: CreditPackage[] }>({ enabled: false, items: [] })
 const entries = shallowRef<BillingPage<CreditEntry>>({ items: [], total: 0 })
@@ -18,26 +19,39 @@ const busy = ref('')
 const error = ref('')
 const actionError = ref('')
 const returned = ref<PaymentOrder | null>(null)
+const methods = ref<PaymentMethod[]>([])
+const offer = ref<CreditPackage | null>(null)
+const channel = ref('')
+const payment = ref<CheckoutResult | null>(null)
+const qrImage = ref('')
+const paymentOpen = ref(false)
+const activeOrderId = ref('')
+const channels = computed(() => methods.value.filter(item => !offer.value || item.currencies.includes(offer.value.currency)).flatMap(item => item.methods.map(method => ({ key: `${item.id || 'legacy'}:${method}`, provider: item, method }))))
+const methodName = (value: string) => t(({ alipay: '支付宝', wxpay: '微信支付', card: '银行卡', airwallex: 'Airwallex' } as Record<string, string>)[value] || value)
+watch(channels, list => { if (!list.some(item => item.key === channel.value)) channel.value = list[0]?.key || '' })
 const requestKeys = new Map<string, string>()
 let generation = 0
 let timer: ReturnType<typeof setTimeout> | undefined
 let polls = 0
+let pollSequence = 0
 const orderId = typeof route.query.order === 'string' && /^[a-f0-9-]{36}$/i.test(route.query.order) ? route.query.order : ''
 async function load() {
   const current = ++generation
   pending.value = true
   error.value = ''
   try {
-    const [wallet, offers, history] = await Promise.all([
+    const [wallet, offers, history, availableMethods] = await Promise.all([
       $fetch<{ balance: number }>('/api/v1/billing/wallet'),
       $fetch<typeof packages.value>('/api/v1/billing/packages'),
       tab.value === 'entries'
         ? $fetch<BillingPage<CreditEntry>>('/api/v1/billing/entries', { query: { offset: offset.value, limit: 20 } })
         : $fetch<BillingPage<PaymentOrder>>('/api/v1/billing/orders', { query: { offset: offset.value, limit: 20 } }),
+      $fetch<{ items: PaymentMethod[] }>('/api/v1/billing/methods'),
     ])
     if (current !== generation) return
     balance.value = wallet.balance
     packages.value = offers
+    methods.value = availableMethods.items
     if (tab.value === 'entries') entries.value = history as BillingPage<CreditEntry>
     else orders.value = history as BillingPage<PaymentOrder>
   } catch (cause) { if (current === generation) error.value = authError(cause) }
@@ -45,40 +59,75 @@ async function load() {
 }
 async function checkOrder() {
   if (timer) clearTimeout(timer)
-  if (!orderId) return
+  if (!activeOrderId.value) return
+  const current = ++pollSequence
+  const identity = activeOrderId.value
   try {
-    returned.value = await $fetch<PaymentOrder>(`/api/v1/billing/orders/${orderId}`)
+    const result = await $fetch<PaymentOrder>(`/api/v1/billing/orders/${identity}`)
+    if (current !== pollSequence || activeOrderId.value !== identity) return
+    returned.value = result
     if (returned.value.status === 'paid') { await load(); return }
-    if (returned.value.status === 'pending' && ++polls < 12) timer = setTimeout(checkOrder, 5000)
-  } catch (cause) { actionError.value = authError(cause) }
+    if (returned.value.status === 'pending' && ++polls < 120) timer = setTimeout(checkOrder, 5000)
+  } catch (cause) { if (current === pollSequence && activeOrderId.value === identity) actionError.value = authError(cause) }
 }
-async function checkout(offer: CreditPackage) {
-  busy.value = offer.id
-  actionError.value = ''
-  if (!requestKeys.has(offer.id)) requestKeys.set(offer.id, crypto.randomUUID())
-  try {
-    const result = await $fetch<{ url: string }>('/api/v1/billing/checkout', {
-      method: 'POST', body: { package_id: offer.id, request_key: requestKeys.get(offer.id) },
-    })
+function checkout(value: CreditPackage) {
+  offer.value = value; payment.value = null; returned.value = null; qrImage.value = ''; actionError.value = ''; paymentOpen.value = true
+  if (timer) clearTimeout(timer)
+  pollSequence++; activeOrderId.value = ''
+  channel.value = channels.value[0]?.key || ''
+}
+async function showPayment(result: CheckoutResult) {
+  if (result.url) {
     const url = new URL(result.url)
-    if (url.protocol !== 'https:' || url.hostname !== 'checkout.stripe.com') throw new Error()
-    window.location.assign(url.href)
+    if (url.protocol !== 'https:' || url.username || url.password) throw new Error()
+  }
+  if (!result.url && !result.qr_code) throw new Error()
+  payment.value = result; paymentOpen.value = true; activeOrderId.value = result.order_id; qrImage.value = ''
+  if (result.qr_code) {
+    const QRCode = await import('qrcode')
+    qrImage.value = await QRCode.toDataURL(result.qr_code, { width: 256, margin: 2, errorCorrectionLevel: 'M' })
+  }
+  polls = 0; await checkOrder()
+}
+async function createPayment() {
+  const choice = channels.value.find(item => item.key === channel.value)
+  if (!offer.value || !choice) return
+  const key = `${offer.value.id}:${choice.key}`
+  busy.value = offer.value.id; actionError.value = ''
+  if (!requestKeys.has(key)) requestKeys.set(key, crypto.randomUUID())
+  try {
+    const result = await $fetch<CheckoutResult>('/api/v1/billing/checkout', {
+      method: 'POST', body: { package_id: offer.value.id, request_key: requestKeys.get(key), provider_id: choice.provider.id, payment_method: choice.method },
+    })
+    await showPayment(result)
   } catch (cause) {
     actionError.value = authError(cause)
-    const status = (cause as { statusCode?: number }).statusCode
-    if (status === 409) requestKeys.delete(offer.id)
+    if ((cause as { statusCode?: number }).statusCode === 409) requestKeys.delete(key)
   } finally { busy.value = '' }
+}
+async function resume(order: PaymentOrder) {
+  busy.value = order.id; actionError.value = ''; returned.value = null
+  try { await showPayment(await $fetch<CheckoutResult>(`/api/v1/billing/orders/${order.id}/resume`, { method: 'POST' })) }
+  catch (cause) { actionError.value = authError(cause) }
+  finally { busy.value = '' }
+}
+function closePayment() {
+  if (busy.value) return
+  paymentOpen.value = false; pollSequence++; activeOrderId.value = ''
+  if (timer) clearTimeout(timer)
+  load()
 }
 onMounted(async () => {
   try {
-    if (!await auth.refresh()) { await navigateTo('/login?next=/account/credits'); return }
+    if (!await auth.refresh(5000)) { await navigateTo('/login?next=/account/credits'); return }
     await load()
+    activeOrderId.value = orderId
     await checkOrder()
   } catch (cause) { error.value = authError(cause); pending.value = false }
 })
 watch(tab, () => { offset.value = 0 })
 watch([tab, offset], load)
-onBeforeUnmount(() => { generation++; if (timer) clearTimeout(timer) })
+onBeforeUnmount(() => { generation++; pollSequence++; if (timer) clearTimeout(timer) })
 </script>
 
 <template>
@@ -104,9 +153,33 @@ onBeforeUnmount(() => { generation++; if (timer) clearTimeout(timer) })
       </section>
       <section class="billing-history" :aria-busy="pending">
         <div class="billing-tabs" role="tablist" :aria-label="$t('账户记录')"><button id="entries-tab" role="tab" :aria-selected="tab === 'entries'" aria-controls="billing-panel" @click="tab = 'entries'">{{ $t('积分明细') }}</button><button id="orders-tab" role="tab" :aria-selected="tab === 'orders'" aria-controls="billing-panel" @click="tab = 'orders'">{{ $t('支付订单') }}</button></div>
-        <div id="billing-panel" role="tabpanel" :aria-labelledby="tab === 'entries' ? 'entries-tab' : 'orders-tab'"><CreditLedger v-if="tab === 'entries'" :entries="entries.items" /><OrderTable v-else :orders="orders.items" /></div>
+        <div id="billing-panel" role="tabpanel" :aria-labelledby="tab === 'entries' ? 'entries-tab' : 'orders-tab'"><CreditLedger v-if="tab === 'entries'" :entries="entries.items" /><OrderTable v-else :orders="orders.items" payable :busy="!!busy" @resume="resume" /></div>
         <AdminPagination :total="tab === 'entries' ? entries.total : orders.total" :offset="offset" :limit="20" :busy="pending" @change="offset = $event" />
       </section>
     </template>
+    <AdminDialog v-if="paymentOpen" :title="$t('充值支付')" :busy="!!busy" @close="closePayment">
+      <div class="payment-checkout">
+        <template v-if="!payment">
+          <div v-if="offer" class="payment-offer"><strong>{{ money(offer.unit_amount, offer.currency) }}</strong><span>{{ offer.credits.toLocaleString() }} {{ $t('积分') }}</span></div>
+          <fieldset class="payment-methods" :disabled="!!busy"><legend>{{ $t('选择支付方式') }}</legend><label v-for="item in channels" :key="item.key" :class="{ selected: channel === item.key }"><input v-model="channel" type="radio" name="payment-method" :value="item.key"><span><strong>{{ methodName(item.method) }}</strong><small>{{ item.provider.name }}</small></span><AppIcon name="card" :size="22" /></label></fieldset>
+          <p v-if="!channels.length" class="billing-empty">{{ $t('此套餐暂时没有可用的支付渠道，请选择其他币种套餐。') }}</p>
+          <button class="button primary" :disabled="!!busy || !channel" @click="createPayment"><AppIcon :name="busy ? 'loader' : 'card'" :class="{ spin: busy }" :size="18" />{{ $t('创建支付订单') }}</button>
+        </template>
+        <template v-else>
+          <div v-if="returned?.status === 'paid'" class="payment-success"><AppIcon name="check" :size="36" /><h3>{{ $t('支付已确认，积分已入账。') }}</h3></div>
+          <template v-else-if="!returned || returned.status === 'pending'">
+            <img v-if="qrImage" :src="qrImage" class="payment-qr" :alt="$t('微信支付二维码')" width="256" height="256">
+            <p v-if="payment.qr_code">{{ $t('请使用微信扫一扫完成支付。') }}</p>
+            <a v-if="payment.url" class="button primary" :href="payment.url" target="_blank" rel="noopener noreferrer">{{ $t('打开支付收银台') }}<AppIcon name="external" :size="17" /></a>
+            <p class="muted">{{ $t('完成支付后此页会自动更新，也可以手动查询结果。') }}</p>
+            <button class="button secondary" @click="polls = 0; checkOrder()">{{ $t('查询支付结果') }}</button>
+          </template>
+          <p v-else>{{ $t('订单已结束，尚未入账。') }}</p>
+          <code class="payment-order-reference">{{ payment.order_id }}</code>
+          <p v-if="payment.expires_at" class="muted">{{ $t('到期时间') }} · {{ date(payment.expires_at) }}</p>
+        </template>
+        <p v-if="actionError" role="alert" class="form-error">{{ actionError }}</p>
+      </div>
+    </AdminDialog>
   </div>
 </template>

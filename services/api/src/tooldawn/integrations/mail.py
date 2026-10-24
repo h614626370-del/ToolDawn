@@ -13,16 +13,20 @@ class MailSender:
         self.settings = settings
         self.control = control
 
-    async def send_code(self, email: str, code: str, challenge_id: str) -> None:
+    async def send_code(
+        self, email: str, code: str, challenge_id: str, purpose: str = "login"
+    ) -> None:
         if self.control:
             sender = MailSender(await self.control.effective())
-            return await sender.send_code(email, code, challenge_id)
+            return await sender.send_code(email, code, challenge_id, purpose)
         message = EmailMessage()
         message["From"] = self.settings.smtp_from
         message["To"] = email
-        message["Subject"] = "ToolDawn 登录验证码"
+        action = "重置密码" if purpose == "password_reset" else "登录"
+        message["Subject"] = f"ToolDawn {action}验证码"
         message.set_content(
-            f"你的登录验证码是：{code}\n\n10 分钟内有效，请勿转发。\n如非本人操作，请忽略此邮件。"
+            f"你的{action}验证码是：{code}\n\n"
+            "10 分钟内有效，请勿转发。\n如非本人操作，请忽略此邮件。"
         )
         await asyncio.to_thread(self._deliver, message, challenge_id)
 

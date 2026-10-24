@@ -2,11 +2,15 @@ from datetime import datetime
 from uuid import UUID
 
 from sqlalchemy import (
+    JSON,
     BigInteger,
+    Boolean,
     CheckConstraint,
     DateTime,
     ForeignKey,
+    Integer,
     String,
+    Text,
     UniqueConstraint,
     Uuid,
 )
@@ -47,6 +51,7 @@ class OrderRecord(Base):
         UniqueConstraint("user_id", "request_key", name="order_request_key"),
         CheckConstraint("credits > 0 AND unit_amount > 0", name="order_positive"),
         CheckConstraint("status IN ('pending', 'paid', 'expired', 'failed')", name="order_status"),
+        UniqueConstraint("provider_id", "provider_trade_id", name="provider_transaction_once"),
     )
 
     id: Mapped[UUID] = mapped_column(Uuid, primary_key=True)
@@ -58,7 +63,29 @@ class OrderRecord(Base):
     currency: Mapped[str] = mapped_column(String(3))
     status: Mapped[str] = mapped_column(String(20), default="pending")
     checkout_id: Mapped[str | None] = mapped_column(String(255), unique=True)
-    checkout_url: Mapped[str | None] = mapped_column(String(2048))
+    checkout_url: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     paid_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    provider_id: Mapped[UUID | None] = mapped_column(ForeignKey("payment_providers.id"), index=True)
+    provider_key: Mapped[str] = mapped_column(String(20), default="stripe", server_default="stripe")
+    provider_name: Mapped[str] = mapped_column(
+        String(80), default="Stripe", server_default="Stripe"
+    )
+    payment_method: Mapped[str] = mapped_column(String(20), default="card", server_default="card")
+    provider_trade_id: Mapped[str | None] = mapped_column(String(255))
+    qr_code: Mapped[str | None] = mapped_column(Text)
+
+
+class ProviderRecord(Base):
+    __tablename__ = "payment_providers"
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True)
+    name: Mapped[str] = mapped_column(String(80))
+    kind: Mapped[str] = mapped_column(String(20))
+    config: Mapped[str] = mapped_column(Text)
+    methods: Mapped[list[str]] = mapped_column(JSON)
+    enabled: Mapped[bool] = mapped_column(Boolean, default=False)
+    sort_order: Mapped[int] = mapped_column(Integer, default=0)
+    revision: Mapped[int] = mapped_column(Integer, default=1)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))

@@ -10,16 +10,21 @@ export function authError(error: unknown): string {
 export function useAuth() {
   const user = useState<AuthUser | null>('auth-user', () => null)
   const loaded = useState('auth-loaded', () => false)
+  const refreshedAt = useState('auth-refreshed-at', () => 0)
   const requestFetch = useRequestFetch()
 
-  async function refresh() {
+  async function refresh(maxAgeMs = 0) {
+    // Reuse a just-completed login or route check; API permissions remain server-validated.
+    if (import.meta.client && loaded.value && Date.now() - refreshedAt.value < maxAgeMs) return user.value
     try {
       user.value = await requestFetch<AuthUser>('/api/v1/me')
+      refreshedAt.value = Date.now()
       return user.value
     } catch (error) {
       const value = error as { statusCode?: number; status?: number }
       if ((value.statusCode || value.status) !== 401) throw error
       user.value = null
+      refreshedAt.value = Date.now()
       return null
     } finally {
       loaded.value = true
@@ -37,12 +42,14 @@ export function useAuth() {
       method: 'POST', body: { email, challenge_id: challengeId, code },
     })
     loaded.value = true
+    refreshedAt.value = Date.now()
   }
 
   async function logout() {
     await $fetch('/api/v1/auth/logout', { method: 'POST' })
     user.value = null
     loaded.value = true
+    refreshedAt.value = Date.now()
   }
 
   async function passwordLogin(email: string, password: string) {
@@ -50,6 +57,7 @@ export function useAuth() {
       method: 'POST', body: { email, password },
     })
     loaded.value = true
+    refreshedAt.value = Date.now()
   }
 
   return { user, loaded, refresh, sendCode, verify, passwordLogin, logout }

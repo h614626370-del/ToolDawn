@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { RuntimeConfig } from '~/types/operations'
-defineProps<{ config: RuntimeConfig }>()
+import type { CreditPackage } from '~/types/billing'
+defineProps<{ config: { credit_packages: CreditPackage[] } }>()
 </script>
 <template>
   <section class="settings-section">

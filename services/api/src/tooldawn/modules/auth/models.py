@@ -35,6 +35,7 @@ class EmailChallenge(Base):
     attempts: Mapped[int] = mapped_column(Integer, default=0)
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
     consumed: Mapped[bool] = mapped_column(Boolean, default=False)
+    purpose: Mapped[str] = mapped_column(String(20), default="login", server_default="login")
 
 
 class SessionRecord(Base):

@@ -1,8 +1,10 @@
 from datetime import datetime
-from typing import Literal
+from typing import Annotated, Literal
 from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field, field_validator
+
+NewPassword = Annotated[str, Field(min_length=6, max_length=128, repr=False)]
 
 
 class EmailRequest(BaseModel):
@@ -23,6 +25,10 @@ class ChallengeResponse(BaseModel):
     challenge_id: UUID
     expires_in: int = 600
     resend_after: int = 60
+
+
+class ResetPasswordRequest(VerifyRequest):
+    new_password: NewPassword
 
 
 class UserResponse(BaseModel):
@@ -50,7 +56,7 @@ class ProfileInput(BaseModel):
 class PasswordInput(BaseModel):
     model_config = {"extra": "forbid"}
     current_password: str = Field(default="", max_length=128, repr=False)
-    new_password: str = Field(min_length=12, max_length=128, repr=False)
+    new_password: NewPassword
 
 
 class CredentialsInput(PasswordInput):

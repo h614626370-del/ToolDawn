@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
@@ -93,8 +93,10 @@ async def users(
     q: Annotated[str, Query(max_length=100)] = "",
     offset: Offset = 0,
     limit: Limit = 20,
+    role: Literal["admin", "user"] | None = None,
+    disabled: bool | None = None,
 ):
-    return await repo.users(q, offset, limit)
+    return await repo.users(q, offset, limit, role, disabled)
 
 
 @router.patch("/users/{user_id}", response_model=AdminUser, dependencies=[Depends(check_origin)])

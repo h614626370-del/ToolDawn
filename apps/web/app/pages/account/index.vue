@@ -15,7 +15,7 @@ async function load() {
   pending.value = true
   error.value = ''
   try {
-    if (!(await auth.refresh())) await navigateTo('/login?next=/account', { replace: true })
+    if (!(await auth.refresh(5000))) await navigateTo('/login?next=/account', { replace: true })
     displayName.value = auth.user.value?.display_name || ''
   } catch (cause) { error.value = authError(cause) } finally { pending.value = false }
 }

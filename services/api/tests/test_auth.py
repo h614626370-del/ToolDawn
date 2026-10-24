@@ -14,7 +14,43 @@ from tooldawn.config import Settings
 from tooldawn.integrations.mail import MailSender
 from tooldawn.main import create_app
 from tooldawn.modules.auth.limiter import AuthLimiter
-from tooldawn.modules.auth.schemas import EmailRequest, VerifyRequest
+from tooldawn.modules.auth.schemas import (
+    CredentialsInput,
+    EmailRequest,
+    PasswordInput,
+    PasswordLogin,
+    ResetPasswordRequest,
+    VerifyRequest,
+)
+
+
+@pytest.mark.parametrize("schema", [PasswordInput, CredentialsInput, ResetPasswordRequest])
+@pytest.mark.parametrize(
+    "password", ["abc123", "abcdef", "123456", "!!!!!!", "中文密码测试", "x" * 128]
+)
+def test_new_password_policy_accepts_any_composition(schema, password):
+    fields = {"new_password": password}
+    if schema is not PasswordInput:
+        fields["email"] = "test@example.com"
+    if schema is ResetPasswordRequest:
+        fields.update(challenge_id=uuid4(), code="123456")
+    assert schema(**fields).new_password == password
+
+
+@pytest.mark.parametrize("schema", [PasswordInput, CredentialsInput, ResetPasswordRequest])
+@pytest.mark.parametrize("password", ["", "12345", "abcde", "中文密码短", "x" * 129])
+def test_new_password_policy_rejects_invalid_length(schema, password):
+    fields = {"new_password": password}
+    if schema is not PasswordInput:
+        fields["email"] = "test@example.com"
+    if schema is ResetPasswordRequest:
+        fields.update(challenge_id=uuid4(), code="123456")
+    with pytest.raises(ValidationError):
+        schema(**fields)
+
+
+def test_login_does_not_apply_new_password_policy_to_existing_credentials():
+    assert PasswordLogin(email="test@example.com", password="old").password == "old"
 
 
 def test_auth_input_normalization_and_ascii_code():
@@ -37,7 +73,7 @@ def test_auth_input_normalization_and_ascii_code():
 def test_auth_rejects_untrusted_write_origins(headers):
     app = create_app(Settings(_env_file=None, environment="test", redis_url=None))
     with TestClient(app) as client:
-        for path in ("email-code", "verify", "logout"):
+        for path in ("email-code", "verify", "logout", "password-reset/code", "password-reset"):
             response = client.post(f"/api/v1/auth/{path}", headers=headers, json={})
             assert response.status_code == 403
             assert response.headers["cache-control"] == "no-store"
@@ -65,15 +101,19 @@ def test_login_rate_limit_fails_closed():
     asyncio.run(run())
 
 
-def test_development_mail_writes_readable_email_only_to_outbox(tmp_path):
+@pytest.mark.parametrize("purpose", ["login", "password_reset"])
+def test_development_mail_writes_readable_email_only_to_outbox(tmp_path, purpose):
     settings = Settings(_env_file=None, mail_mode="file", mail_outbox=str(tmp_path))
     challenge_id = str(uuid4())
-    asyncio.run(MailSender(settings).send_code("test@example.com", "012345", challenge_id))
+    asyncio.run(MailSender(settings).send_code("test@example.com", "012345", challenge_id, purpose))
     message = BytesParser(policy=policy.default).parsebytes(
         (tmp_path / f"{challenge_id}.eml").read_bytes()
     )
     assert message["To"] == "test@example.com"
     assert "012345" in message.get_content()
+    action = "重置密码" if purpose == "password_reset" else "登录"
+    assert action in message["Subject"]
+    assert action in message.get_content()
     assert len(list(tmp_path.iterdir())) == 1
 
 

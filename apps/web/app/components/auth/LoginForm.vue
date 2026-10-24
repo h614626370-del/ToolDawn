@@ -84,6 +84,7 @@ function changeEmail() {
       <input id="login-email" v-model="email" type="email" autocomplete="email" maxlength="254" placeholder="you@example.com" required :readonly="!!challenge" :disabled="busy">
     </div>
     <label v-if="mode === 'password'" class="form-field"><span>{{ $t('密码') }}</span><input v-model="password" type="password" autocomplete="current-password" maxlength="128" required :disabled="busy"></label>
+    <NuxtLink v-if="mode === 'password'" to="/forgot-password" class="text-button">{{ $t('忘记密码？') }}</NuxtLink>
     <template v-if="mode === 'code' && challenge">
       <div class="code-email-actions">
         <button type="button" class="text-button" :disabled="busy" @click="changeEmail"><AppIcon name="pen" :size="14" />{{ $t('更换邮箱') }}</button>

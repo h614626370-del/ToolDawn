@@ -53,3 +53,15 @@
   .admin-return span { display: none; }
   .admin-return { padding: 6px; }
 }
+.payment-checkout { padding: 24px; display: flex; flex-direction: column; gap: 20px; text-align: center; align-items: stretch; }
+.payment-offer { display: flex; flex-direction: column; gap: 8px; }
+.payment-offer strong { font-size: 30px; }
+.payment-methods { display: grid; gap: 10px; border: 0; padding: 0; margin: 0; text-align: left; }
+.payment-methods legend { margin-bottom: 12px; font-size: 13px; color: var(--muted); }
+.payment-methods label { display: flex; align-items: center; gap: 12px; border: 1px solid var(--line); padding: 14px; border-radius: 10px; cursor: pointer; }
+.payment-methods label.selected { border-color: var(--ink); }
+.payment-methods label > span { flex: 1; display: grid; gap: 5px; }
+.payment-methods small, .payment-order-reference { color: var(--muted); font-size: 12px; }
+.payment-order-reference { overflow-wrap: anywhere; }
+.payment-qr { background: white; margin-inline: auto; max-width: 100%; height: auto; border-radius: 8px; }
+.payment-success { display: grid; justify-items: center; gap: 16px; padding-block: 20px; }

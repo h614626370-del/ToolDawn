@@ -203,3 +203,107 @@ def test_delivery_failure_removes_challenge(auth_client):
             return await db.scalar(select(EmailChallenge.id).where(EmailChallenge.email == email))
 
     assert client.portal.call(remaining) is None
+
+
+def reset_code(client, service, email):
+    response = client.post(
+        "/api/v1/auth/password-reset/code", json={"email": email}, headers=ORIGIN
+    )
+    assert response.status_code == 200
+    assert service.mail.send_code.call_args.kwargs == {"purpose": "password_reset"}
+    return {
+        "email": email,
+        "challenge_id": response.json()["challenge_id"],
+        "code": service.mail.send_code.call_args.args[1],
+        "new_password": "new-password-123456",
+    }
+
+
+def test_password_reset_isolated_single_use_and_revokes_all_sessions(auth_client):
+    client, service, email = auth_client
+    assert login(client, challenge(client, service, email)).status_code == 200
+    old_token = client.cookies.get("tooldawn_session")
+    client.cookies.clear()
+    assert login(client, challenge(client, service, email)).status_code == 200
+    other_token = client.cookies.get("tooldawn_session")
+    login_code = challenge(client, service, email)
+    assert (
+        client.post(
+            "/api/v1/auth/password-reset",
+            headers=ORIGIN,
+            json={**login_code, "new_password": "new-password-123456"},
+        ).status_code
+        == 400
+    )
+    data = reset_code(client, service, email)
+    assert (
+        login(client, {key: data[key] for key in ("email", "challenge_id", "code")}).status_code
+        == 400
+    )
+    older = reset_code(client, service, email)
+    assert client.post("/api/v1/auth/password-reset", headers=ORIGIN, json=data).status_code == 204
+    for token in (old_token, other_token):
+        assert (
+            client.get("/api/v1/me", headers={"cookie": f"tooldawn_session={token}"}).status_code
+            == 401
+        )
+    for stale in (data, older):
+        assert (
+            client.post("/api/v1/auth/password-reset", headers=ORIGIN, json=stale).status_code
+            == 400
+        )
+    assert (
+        client.post(
+            "/api/v1/auth/password",
+            headers=ORIGIN,
+            json={"email": email, "password": data["new_password"]},
+        ).status_code
+        == 200
+    )
+
+
+def test_password_reset_attempt_limit_is_persisted(auth_client):
+    client, service, email = auth_client
+    assert login(client, challenge(client, service, email)).status_code == 200
+    data = reset_code(client, service, email)
+    wrong = "000000" if data["code"] != "000000" else "999999"
+    for _ in range(5):
+        assert (
+            client.post(
+                "/api/v1/auth/password-reset", headers=ORIGIN, json={**data, "code": wrong}
+            ).status_code
+            == 400
+        )
+    assert client.post("/api/v1/auth/password-reset", headers=ORIGIN, json=data).status_code == 400
+
+
+def test_concurrent_reset_only_one_password_wins(auth_client):
+    from types import SimpleNamespace
+
+    from fastapi import Request
+
+    from tooldawn.modules.auth.recovery import reset_password
+    from tooldawn.modules.auth.schemas import ResetPasswordRequest
+
+    client, service, email = auth_client
+    assert login(client, challenge(client, service, email)).status_code == 200
+    first = ResetPasswordRequest(**reset_code(client, service, email))
+    second = ResetPasswordRequest(**reset_code(client, service, email))
+    second.new_password = "another-password-123456"
+    request = Request(
+        {
+            "type": "http",
+            "app": SimpleNamespace(state=SimpleNamespace(auth=service)),
+            "client": ("test-ip", 1),
+            "headers": [],
+        }
+    )
+
+    async def reset_twice():
+        return await asyncio.gather(
+            reset_password(first, request), reset_password(second, request), return_exceptions=True
+        )
+
+    results = client.portal.call(reset_twice)
+    assert sum(result is None for result in results) == 1
+    assert sum(getattr(result, "status_code", None) == 400 for result in results) == 1

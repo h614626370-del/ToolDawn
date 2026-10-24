@@ -3,7 +3,7 @@ from datetime import UTC, datetime, timedelta
 from time import perf_counter
 
 from fastapi import HTTPException
-from sqlalchemy import case, func, select, text
+from sqlalchemy import case, func, or_, select, text
 
 from tooldawn.modules.admin.models import AuditRecord
 from tooldawn.modules.ai_tools.models import TextRunRecord
@@ -165,13 +165,23 @@ class AnalyticsRepository:
                 ],
             }
 
-    async def audit(self, q, offset, limit):
+    async def audit(self, q, offset, limit, start=None, end=None):
         query = select(AuditRecord, UserRecord.email).outerjoin(
             UserRecord,
             UserRecord.id == AuditRecord.actor_id,
         )
         if q.strip():
-            query = query.where(AuditRecord.action.icontains(q.strip(), autoescape=True))
+            query = query.where(
+                or_(
+                    AuditRecord.action.icontains(q.strip(), autoescape=True),
+                    AuditRecord.target.icontains(q.strip(), autoescape=True),
+                    UserRecord.email.icontains(q.strip(), autoescape=True),
+                )
+            )
+        if start:
+            query = query.where(AuditRecord.created_at >= start)
+        if end:
+            query = query.where(AuditRecord.created_at < end)
         async with self.sessions() as db:
             total = await db.scalar(select(func.count()).select_from(query.subquery()))
             rows = await db.execute(

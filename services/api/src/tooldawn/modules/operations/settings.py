@@ -7,7 +7,7 @@ from sqlalchemy import text
 from tooldawn.config import Settings
 from tooldawn.modules.admin.repository import audit
 from tooldawn.modules.operations.models import ModelAccount, SettingRecord
-from tooldawn.modules.operations.schemas import RuntimeConfig
+from tooldawn.modules.operations.schemas import PaymentConfigInput, RuntimeConfig
 from tooldawn.modules.operations.secrets import SecretBox
 
 SECRET_FIELDS = {"smtp_password", "stripe_secret_key", "stripe_webhook_secret"}
@@ -62,6 +62,7 @@ class SettingsRepository:
             key: getattr(config, key)
             for key in (
                 "site_name",
+                "site_logo",
                 "announcement",
                 "contact_email",
                 "registration_enabled",
@@ -77,6 +78,18 @@ class SettingsRepository:
         data.update({key + "_set": bool(getattr(config, key)) for key in SECRET_FIELDS})
         return {**data, "revision": revision}
 
+    async def payment_view(self):
+        view = await self.view()
+        return {
+            key: view[key]
+            for key in (
+                "revision",
+                "credit_packages",
+                "stripe_secret_key_set",
+                "stripe_webhook_secret_set",
+            )
+        }
+
     async def save(self, data, actor):
         async with self.sessions.begin() as db:
             await db.execute(text("SELECT pg_advisory_xact_lock(72649103)"))
@@ -85,9 +98,14 @@ class SettingsRepository:
                 raise HTTPException(409, "记录已被其他操作更新，请刷新列表后重新编辑。")
             old = dict(row.value) if row else {}
             values = data.model_dump(mode="json", exclude=SECRET_FIELDS | {"revision"})
+            changed_fields = list(values)
+            payment_only = isinstance(data, PaymentConfigInput)
+            if payment_only:
+                values = {**old, **values}
             for key in SECRET_FIELDS:
-                value = getattr(data, key)
+                value = getattr(data, key, None)
                 if value is not None:
+                    changed_fields.append(key)
                     raw = value.get_secret_value()
                     if len(raw) > 1000:
                         raise HTTPException(422, "密钥长度不正确。")
@@ -118,8 +136,14 @@ class SettingsRepository:
                         key="runtime", value=values, revision=1, updated_at=datetime.now(UTC)
                     )
                 )
-            audit(db, actor, "settings.update", "runtime", list(values))
-        return await self.view()
+            audit(
+                db,
+                actor,
+                "payments.update" if payment_only else "settings.update",
+                "runtime",
+                changed_fields,
+            )
+        return await self.payment_view() if payment_only else await self.view()
 
 
 async def runtime(request):

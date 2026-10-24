@@ -23,8 +23,9 @@
 .workspace-input .context-input { min-height: 80px; height: 80px; font-size: 13px; padding-top: 4px; padding-bottom: 8px; }
 .workspace-submit { display: flex; align-items: center; gap: 14px; padding: 16px 20px; flex-wrap: wrap; }
 .workspace-submit .button { min-height: 43px; }
-.workspace-result { display: flex; flex-direction: column; background: #f3f8f7; }
-.workspace-result .editor-bar { background: #e8f0ed; }
+.workspace-result { display: flex; flex-direction: column; background: #eff8f1; }
+.workspace-input .editor-bar { background: #edf4ff; color: #285c91; }
+.workspace-result .editor-bar { background: #dceee1; color: #236444; }
 .result-actions { display: flex; gap: 4px; flex-shrink: 0; }
 .result-actions .icon-button { width: 30px; height: 30px; }
 .result-empty { flex: 1; min-height: 320px; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 18px; color: #748c83; text-align: center; padding: 28px; line-height: 1.9; }

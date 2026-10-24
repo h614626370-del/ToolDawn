@@ -1,4 +1,5 @@
-from typing import Annotated
+from datetime import datetime
+from typing import Annotated, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
@@ -19,6 +20,7 @@ from tooldawn.modules.billing.schemas import (
     Packages,
     Wallet,
 )
+from tooldawn.modules.operations.routes import validate_range
 from tooldawn.modules.operations.settings import effective_settings
 
 router = APIRouter(tags=["billing"])
@@ -40,8 +42,14 @@ Repo = Annotated[BillingRepository, Depends(repository)]
 @router.get("/billing/packages", response_model=Packages)
 async def packages(request: Request):
     settings = await effective_settings(request)
+    from tooldawn.modules.billing.providers import ProviderRepository
+
+    control = getattr(request.app.state, "control", None)
+    providers = await ProviderRepository(control).listing(public=True) if control else []
     return Packages(
-        enabled=bool(settings.stripe_secret_key and settings.stripe_webhook_secret)
+        enabled=(
+            bool(settings.stripe_secret_key and settings.stripe_webhook_secret) or bool(providers)
+        )
         and request.app.state.auth is not None
         and bool(settings.credit_packages),
         items=settings.credit_packages,
@@ -71,11 +79,34 @@ async def order(order_id: UUID, user: User, repo: Repo):
 @router.post("/billing/checkout", response_model=Checkout, dependencies=[Depends(check_origin)])
 async def checkout(data: CheckoutInput, user: User, repo: Repo, request: Request):
     settings = await effective_settings(request)
+    if data.provider_id:
+        from tooldawn.modules.billing.provider_gateway import ProviderGateway
+        from tooldawn.modules.billing.providers import ProviderRepository
+
+        control = getattr(request.app.state, "control", None)
+        if not control:
+            raise HTTPException(503, "支付尚未开放。")
+        providers = ProviderRepository(control)
+        record = await repo.prepare_order(
+            user.id,
+            data.request_key,
+            data.package_id,
+            settings.credit_packages,
+            data.provider_id,
+            data.payment_method,
+        )
+        provider = await providers.get(record.provider_id)
+        gateway = ProviderGateway(provider, providers.decode(provider), settings)
+        return await repo.provider_checkout(record.id, user.id, gateway)
     gateway = gateway_for(request, settings)
     if not gateway.enabled:
         raise HTTPException(503, "支付尚未开放。")
     record = await repo.prepare_order(
-        user.id, data.request_key, data.package_id, settings.credit_packages
+        user.id,
+        data.request_key,
+        data.package_id,
+        settings.credit_packages,
+        payment_method=data.payment_method,
     )
     if record.checkout_url:
         return Checkout(order_id=record.id, url=record.checkout_url)
@@ -114,8 +145,31 @@ def gateway_for(request, settings):
 
 
 @router.get("/admin/billing/orders", response_model=AdminOrderPage)
-async def admin_orders(actor: Admin, repo: Repo, offset: Offset = 0, limit: Limit = 20):
-    return await repo.orders(None, offset, limit)
+async def admin_orders(
+    actor: Admin,
+    repo: Repo,
+    offset: Offset = 0,
+    limit: Limit = 20,
+    q: Annotated[str, Query(max_length=100)] = "",
+    status: Literal["pending", "paid", "expired", "failed"] | None = None,
+    start: datetime | None = None,
+    end: datetime | None = None,
+):
+    validate_range(start, end)
+    return await repo.orders(None, offset, limit, q, status, start, end)
+
+
+@router.get("/admin/billing/statistics")
+async def admin_statistics(
+    actor: Admin,
+    repo: Repo,
+    q: Annotated[str, Query(max_length=100)] = "",
+    status: Literal["pending", "paid", "expired", "failed"] | None = None,
+    start: datetime | None = None,
+    end: datetime | None = None,
+):
+    validate_range(start, end)
+    return await repo.statistics(q, status, start, end)
 
 
 @router.get("/admin/users/{user_id}/wallet", response_model=Wallet)

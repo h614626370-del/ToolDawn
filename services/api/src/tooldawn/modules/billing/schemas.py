@@ -18,6 +18,8 @@ class CheckoutInput(BaseModel):
     model_config = ConfigDict(extra="forbid")
     package_id: str = Field(max_length=50)
     request_key: UUID
+    provider_id: UUID | None = None
+    payment_method: str = Field(default="card", max_length=20)
 
 
 class AdjustmentInput(BaseModel):
@@ -48,6 +50,10 @@ class Order(BaseModel):
     created_at: datetime
     expires_at: datetime
     paid_at: datetime | None
+    provider_id: UUID | None = None
+    provider_key: str = "stripe"
+    provider_name: str = "Stripe"
+    payment_method: str = "card"
 
 
 class AdminOrder(Order):
@@ -81,4 +87,6 @@ class Packages(BaseModel):
 
 class Checkout(BaseModel):
     order_id: UUID
-    url: str
+    url: str = ""
+    qr_code: str | None = None
+    expires_at: datetime | None = None

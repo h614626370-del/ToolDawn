@@ -20,10 +20,12 @@ from tooldawn.modules.ai_tools.routes import router as ai_tools_router
 from tooldawn.modules.auth.bootstrap import bootstrap_admin
 from tooldawn.modules.auth.limiter import AuthLimiter
 from tooldawn.modules.auth.profile import router as profile_router
+from tooldawn.modules.auth.recovery import router as recovery_router
 from tooldawn.modules.auth.repository import AuthRepository
 from tooldawn.modules.auth.routes import router as auth_router
 from tooldawn.modules.auth.service import AuthService
 from tooldawn.modules.billing.gateway import StripeGateway
+from tooldawn.modules.billing.provider_routes import router as provider_router
 from tooldawn.modules.billing.repository import BillingRepository
 from tooldawn.modules.billing.routes import router as billing_router
 from tooldawn.modules.catalog.repository import PostgresCatalogRepository, SeedCatalogRepository
@@ -102,7 +104,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(auth_router, prefix="/api/v1")
     app.include_router(admin_router, prefix="/api/v1")
     app.include_router(billing_router, prefix="/api/v1")
+    app.include_router(provider_router, prefix="/api/v1")
     app.include_router(ai_tools_router, prefix="/api/v1")
     app.include_router(profile_router, prefix="/api/v1")
+    app.include_router(recovery_router, prefix="/api/v1")
     app.include_router(operations_router, prefix="/api/v1")
     return app

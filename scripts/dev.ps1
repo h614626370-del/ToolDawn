@@ -14,6 +14,27 @@ $nuxtEntry = Join-Path $webRoot "node_modules\nuxt\bin\nuxt.mjs"
 if (!(Test-Path -LiteralPath $pythonExe) -or !(Test-Path -LiteralPath $nuxtEntry)) {
     throw "Install backend and frontend dependencies first. See README.md."
 }
+$apiEnv = Join-Path $apiRoot ".env"
+if (Test-Path -LiteralPath $apiEnv) {
+    $connectionConfig = [System.IO.File]::ReadAllText($apiEnv)
+    if ($connectionConfig -match '(?m)^TOOLDAWN_DATABASE_URL=.+@127\.0\.0\.1:25432/tooldawn\s*$' -and
+        $connectionConfig -match '(?m)^TOOLDAWN_REDIS_URL=.+@127\.0\.0\.1:26379/0\s*$') {
+        & wsl.exe -d Ubuntu -u root -- sh -lc 'cd /opt/tooldawn-infra && docker compose up -d --wait --wait-timeout 60'
+        if ($LASTEXITCODE -ne 0) { throw "Local WSL database services could not start. See docs/local-infra.md." }
+    }
+    Remove-Variable connectionConfig
+}
+# Mirrored WSL networking can reserve a port without a Windows listening process.
+# Keep explicitly requested ports strict; only the default API port may fall back.
+if (!$PSBoundParameters.ContainsKey('ApiPort')) {
+    $probe = [System.Net.Sockets.TcpListener]::new([System.Net.IPAddress]::Loopback, $ApiPort)
+    try { $probe.Start() }
+    catch {
+        $ApiPort = 8001
+        Write-Output "Default API port 8000 is unavailable; using 8001."
+    }
+    finally { $probe.Stop() }
+}
 foreach ($port in @($WebPort, $ApiPort)) {
     if (Get-NetTCPConnection -State Listen -LocalPort $port -ErrorAction SilentlyContinue) {
         throw "Port $port is already in use. Choose another -WebPort or -ApiPort."

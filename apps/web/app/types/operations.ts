@@ -6,7 +6,7 @@ export interface ModelAccount {
 }
 export interface ToolOverride { account_id: string | null; cost: number | null; enabled: boolean; instruction: string }
 export interface RuntimeConfig {
-  revision: number; site_name: string; announcement: string; contact_email: string
+  revision: number; site_logo: 'default' | 'speed' | 'heritage' | 'signature' | 'street'; site_name: string; announcement: string; contact_email: string
   registration_enabled: boolean; ai_enabled: boolean; tickets_enabled: boolean
   ai_tool_cost: number; ai_requests_per_minute: number; default_account_id: string | null
   tool_overrides: Record<string, ToolOverride>

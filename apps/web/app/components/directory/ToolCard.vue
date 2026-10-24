@@ -7,7 +7,7 @@ const imageFailed = ref(false)
 </script>
 
 <template>
-  <article class="tool-card" :class="{ 'has-preview': !compact && (tool.image || tool.slug === 'text-polish'), compact }">
+  <article class="tool-card" :data-tone="category?.color || tool.color" :class="{ 'has-preview': !compact && (tool.image || tool.slug === 'text-polish'), compact }">
     <NuxtLink :to="`/tools/${tool.slug}`" class="tool-card-link">
       <div v-if="!compact && tool.image && !imageFailed" class="tool-preview" :class="`preview-${tool.slug}`">
         <img :src="tool.image" :alt="tool.name === '食物分析' ? $t('蔬菜与谷物餐食') : tool.name === '智能抠图' ? $t('浅色背景上的运动鞋') : $t('湖泊与群山风景')" width="600" height="360" loading="lazy" @error="imageFailed = true">

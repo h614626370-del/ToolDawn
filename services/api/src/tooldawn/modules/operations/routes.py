@@ -16,6 +16,7 @@ from tooldawn.modules.auth.schemas import UserResponse
 from tooldawn.modules.operations.schemas import (
     AccountInput,
     ConfigInput,
+    PaymentConfigInput,
     ReplyInput,
     TicketInput,
     TicketState,
@@ -50,6 +51,7 @@ async def site(request: Request):
     return config.model_dump(
         include={
             "site_name",
+            "site_logo",
             "announcement",
             "contact_email",
             "registration_enabled",
@@ -72,6 +74,16 @@ async def save_settings(data: ConfigInput, request: Request, actor: Super):
 @router.get("/admin/model-accounts")
 async def accounts(request: Request, actor: Super):
     return await required(request, "accounts").listing()
+
+
+@router.get("/admin/billing/config")
+async def payment_config(request: Request, actor: Super):
+    return await required(request, "control").payment_view()
+
+
+@router.put("/admin/billing/config", dependencies=guard)
+async def save_payment_config(data: PaymentConfigInput, request: Request, actor: Super):
+    return await required(request, "control").save(data, actor.id)
 
 
 @router.post("/admin/model-accounts", dependencies=guard)
@@ -112,16 +124,27 @@ async def monitoring(request: Request, actor: Admin):
 
 @router.get("/admin/audit")
 async def audit(
-    request: Request, actor: Admin, q: Search = "", offset: Offset = 0, limit: Limit = 20
+    request: Request,
+    actor: Admin,
+    q: Search = "",
+    offset: Offset = 0,
+    limit: Limit = 20,
+    start: datetime | None = None,
+    end: datetime | None = None,
 ):
-    return await required(request, "analytics").audit(q, offset, limit)
+    validate_range(start, end)
+    return await required(request, "analytics").audit(q, offset, limit, start, end)
 
 
-async def usage(request, owner, q, status, tool, start, end, offset, limit):
+def validate_range(start, end):
     if any(value is not None and value.utcoffset() is None for value in (start, end)):
         raise HTTPException(422, "日期范围不正确。")
     if start and end and start >= end:
         raise HTTPException(422, "日期范围不正确。")
+
+
+async def usage(request, owner, q, status, tool, start, end, offset, limit):
+    validate_range(start, end)
     return await required(request, "analytics").usage(
         owner,
         q,

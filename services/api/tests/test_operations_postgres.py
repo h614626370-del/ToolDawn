@@ -20,7 +20,7 @@ pytestmark = pytest.mark.skipif(
     not os.environ.get("TOOLDAWN_TEST_DATABASE_URL"), reason="Requires migrated test PostgreSQL"
 )
 ORIGIN = {"origin": "http://localhost:3000"}
-PASSWORD = "test-password-for-operations"
+PASSWORD = "test-password-for-operations-123"
 
 
 @pytest.fixture
@@ -116,6 +116,7 @@ def test_settings_secrets_permissions_and_live_effects(ops):
     payload = settings_input(
         client,
         site_name="Changed site",
+        site_logo="heritage",
         smtp_password="private-smtp-key",
         ai_tool_cost=7,
         ai_enabled=False,
@@ -127,6 +128,11 @@ def test_settings_secrets_permissions_and_live_effects(ops):
     assert client.put("/api/v1/admin/settings", headers=ORIGIN, json=payload).status_code == 409
     public = client.get("/api/v1/site").json()
     assert public["site_name"] == "Changed site"
+    assert public["site_logo"] == "heritage"
+    invalid_logo = settings_input(client, site_logo="https://example.com/logo.svg")
+    assert (
+        client.put("/api/v1/admin/settings", headers=ORIGIN, json=invalid_logo).status_code == 422
+    )
     assert "smtp_password" not in public
 
     async def stored():
@@ -290,10 +296,17 @@ def test_bootstrap_runs_only_once(ops):
     assert not Path(settings.bootstrap_credentials).exists()
 
 
-def test_bootstrap_generates_private_credentials_and_allows_first_login(ops):
+@pytest.mark.parametrize("real_limiter", [False, True])
+def test_bootstrap_generates_private_credentials_and_allows_first_login(ops, real_limiter):
     from pathlib import Path
 
     client, app, prefix, settings = ops
+    if real_limiter:
+        if not os.environ.get("TOOLDAWN_TEST_REDIS_URL"):
+            pytest.skip("Requires test Redis for the complete credential-change flow")
+        from tooldawn.modules.auth.limiter import AuthLimiter
+
+        app.state.auth.limiter = AuthLimiter(app.state.redis)
 
     async def demote():
         async with app.state.control.sessions.begin() as db:

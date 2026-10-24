@@ -1,6 +1,6 @@
 import asyncio
 import os
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 from uuid import uuid4
 
 import pytest
@@ -13,6 +13,44 @@ from tooldawn.infra.redis import create_redis
 from tooldawn.main import create_app
 from tooldawn.modules.auth.limiter import AuthLimiter
 from tooldawn.modules.auth.security import token_digest
+
+
+@pytest.mark.skipif(
+    not os.environ.get("TOOLDAWN_TEST_REDIS_URL"), reason="Requires test Redis connection"
+)
+def test_idle_connection_health_check_recovers_before_rate_limit_write():
+    async def run():
+        cache = create_redis(os.environ["TOOLDAWN_TEST_REDIS_URL"])
+        key = f"tooldawn:auth:reconnect:{token_digest(uuid4().hex)}"
+        connection = None
+        try:
+            connection = await cache.connection_pool.get_connection()
+            connection.next_health_check = -1
+            original = type(connection)._send_ping
+            attempts = 0
+
+            async def disconnected_once(self):
+                nonlocal attempts
+                attempts += 1
+                if attempts == 1:
+                    raise ConnectionError("simulated stale idle socket")
+                return await original(self)
+
+            await cache.connection_pool.release(connection)
+            connection = None
+            with patch("redis.asyncio.connection.AbstractConnection._send_ping", disconnected_once):
+                from tooldawn.modules.auth.limiter import WINDOW_SCRIPT
+
+                assert await cache.eval(WINDOW_SCRIPT, 1, key, 60) == 1
+            assert attempts == 2
+            assert await cache.get(key) == "1"
+        finally:
+            if connection is not None:
+                await cache.connection_pool.release(connection)
+            await cache.delete(key)
+            await cache.aclose()
+
+    asyncio.run(run())
 
 
 def test_redis_outage_blocks_readiness_without_leaking_credentials():

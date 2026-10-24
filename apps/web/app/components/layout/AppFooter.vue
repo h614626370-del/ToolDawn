@@ -3,7 +3,7 @@ const { data: site } = await useSiteSettings()
 </script>
 <template>
   <footer class="site-footer container">
-    <NuxtLink to="/" class="footer-brand"><AppIcon name="sun" :size="24" />{{ site.site_name }}</NuxtLink>
+    <NuxtLink to="/" class="footer-brand"><SiteLogo :variant="site.site_logo" :size="32" />{{ site.site_name }}</NuxtLink>
     <span class="footer-note">{{ $t('让好工具，遇见需要它的人。') }}</span>
     <nav :aria-label="$t('页脚导航')">
       <a v-if="site.contact_email" :href="`mailto:${site.contact_email}`">{{ $t('联系我们') }}</a>

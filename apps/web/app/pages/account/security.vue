@@ -15,7 +15,7 @@ const sessions = ref<{ created_at: string; expires_at: string; current: boolean 
 useSeoMeta({ title: () => t('账户安全'), robots: 'noindex, nofollow' })
 async function load() {
   try {
-    const user = await auth.refresh()
+    const user = await auth.refresh(5000)
     email.value = user?.email || ''
     sessions.value = await $fetch<{ created_at: string; expires_at: string; current: boolean }[]>('/api/v1/me/sessions')
   } catch (cause) { error.value = authError(cause) }
@@ -57,8 +57,8 @@ async function revoke() {
       <h2>{{ auth.user.value?.is_superadmin ? $t('管理员凭据') : $t('修改密码') }}</h2>
       <label v-if="auth.user.value?.is_superadmin" class="admin-field"><span>{{ $t('登录邮箱') }}</span><input v-model="email" type="email" required maxlength="254" autocomplete="username"></label>
       <label v-if="auth.user.value?.has_password" class="admin-field"><span>{{ $t('当前密码') }}</span><input v-model="current" type="password" required maxlength="128" autocomplete="current-password"></label>
-      <label class="admin-field"><span>{{ $t('新密码（至少 12 位）') }}</span><input v-model="password" type="password" required minlength="12" maxlength="128" autocomplete="new-password"></label>
-      <label class="admin-field"><span>{{ $t('确认新密码') }}</span><input v-model="confirm" type="password" required minlength="12" maxlength="128" autocomplete="new-password"></label>
+      <label class="admin-field"><span>{{ $t('新密码') }}</span><input v-model="password" type="password" required minlength="6" maxlength="128" :title="$t('密码长度为 6–128 个字符。')" aria-describedby="password-policy" autocomplete="new-password"><small id="password-policy">{{ $t('密码长度为 6–128 个字符。') }}</small></label>
+      <label class="admin-field"><span>{{ $t('确认新密码') }}</span><input v-model="confirm" type="password" required minlength="6" maxlength="128" autocomplete="new-password"></label>
       <button class="button primary" :disabled="busy"><AppIcon name="save" :size="17" />{{ $t('保存更改') }}</button>
     </form>
     <section class="settings-section"><div class="section-heading"><h2>{{ $t('登录会话') }}</h2><button class="button secondary" :disabled="busy" @click="revoke"><AppIcon name="logout" :size="16" />{{ $t('退出其他登录') }}</button></div>
