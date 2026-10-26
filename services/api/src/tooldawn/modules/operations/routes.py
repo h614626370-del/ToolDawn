@@ -13,8 +13,10 @@ from tooldawn.modules.auth.dependencies import (
     require_user,
 )
 from tooldawn.modules.auth.schemas import UserResponse
+from tooldawn.modules.operations.groups import GroupInput
 from tooldawn.modules.operations.schemas import (
     AccountInput,
+    AccountModelDiscoveryInput,
     ConfigInput,
     PaymentConfigInput,
     ReplyInput,
@@ -91,6 +93,12 @@ async def create_account(data: AccountInput, request: Request, actor: Super):
     return await required(request, "accounts").save(data, actor.id)
 
 
+@router.post("/admin/model-accounts/models", dependencies=guard)
+async def discover_account_models(data: AccountModelDiscoveryInput, request: Request, actor: Super):
+    await auth_service(request).limiter.check("model-test", str(actor.id), 10, 60)
+    return await required(request, "accounts").discover(data, actor.id)
+
+
 @router.put("/admin/model-accounts/{identity}", dependencies=guard)
 async def save_account(identity: UUID, data: AccountInput, request: Request, actor: Super):
     return await required(request, "accounts").save(data, actor.id, identity)
@@ -107,7 +115,40 @@ async def definitions(actor: Super):
     return [
         {"slug": tool.slug, "name": tool.name, "instruction": tool.instruction}
         for tool in TOOLS.values()
-    ]
+    ] + [{"slug": "image-generate", "name": "AI 图片生成", "instruction": ""}]
+
+
+@router.get("/admin/model-group-options")
+async def group_options(request: Request, actor: Admin):
+    return await required(request, "model_groups").listing(options=True)
+
+
+@router.get("/admin/model-groups")
+async def model_groups(request: Request, actor: Super):
+    return await required(request, "model_groups").listing()
+
+
+@router.post("/admin/model-groups", dependencies=guard)
+async def create_group(data: GroupInput, request: Request, actor: Super):
+    return await required(request, "model_groups").save(data, actor.id)
+
+
+@router.put("/admin/model-groups/{identity}", dependencies=guard)
+async def save_group(identity: UUID, data: GroupInput, request: Request, actor: Super):
+    return await required(request, "model_groups").save(data, actor.id, identity)
+
+
+@router.delete("/admin/model-groups/{identity}", dependencies=guard)
+async def delete_group(
+    identity: UUID, request: Request, actor: Super, revision: Annotated[int, Query(ge=1)]
+):
+    await required(request, "model_groups").remove(identity, revision, actor.id)
+    return {"ok": True}
+
+
+@router.post("/admin/model-accounts/{identity}/reset-health", dependencies=guard)
+async def reset_account_health(identity: UUID, request: Request, actor: Super):
+    return await required(request, "accounts").reset_health(identity, actor.id)
 
 
 @router.get("/admin/dashboard")

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { CreditEntry } from '~/types/billing'
+import { accountToolNames } from '~/utils/accountTools'
 defineProps<{ entries: CreditEntry[] }>()
 const { date, kind } = useBillingFormat()
 </script>
@@ -11,7 +12,7 @@ const { date, kind } = useBillingFormat()
       <tbody><tr v-for="entry in entries" :key="entry.id">
         <td>{{ date(entry.created_at) }}</td><td>{{ kind(entry.kind) }}</td>
         <td class="credit-amount" :class="{ positive: entry.amount > 0 }">{{ entry.amount > 0 ? '+' : '' }}{{ entry.amount.toLocaleString() }}</td>
-        <td>{{ entry.balance_after.toLocaleString() }}</td><td>{{ $te(entry.reason) ? $t(entry.reason) : entry.reason }}</td>
+        <td>{{ entry.balance_after.toLocaleString() }}</td><td>{{ accountToolNames[entry.reason] ? $t(accountToolNames[entry.reason]!) : $te(entry.reason) ? $t(entry.reason) : entry.reason }}</td>
       </tr></tbody>
     </table>
   </div>

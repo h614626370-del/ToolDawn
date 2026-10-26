@@ -1,94 +1,263 @@
 {
   "categories": [
-    {"slug":"image","name":"图片处理","icon":"image","color":"green"},
-    {"slug":"writing","name":"文字写作","icon":"text","color":"blue"},
-    {"slug":"life","name":"日常生活","icon":"coffee","color":"coral"},
-    {"slug":"utility","name":"实用工具","icon":"wrench","color":"amber"}
+    {
+      "slug": "image",
+      "name": "图片处理",
+      "icon": "image",
+      "color": "green"
+    },
+    {
+      "slug": "writing",
+      "name": "文字写作",
+      "icon": "text",
+      "color": "blue"
+    },
+    {
+      "slug": "life",
+      "name": "日常生活",
+      "icon": "coffee",
+      "color": "coral"
+    },
+    {
+      "slug": "utility",
+      "name": "实用工具",
+      "icon": "wrench",
+      "color": "amber"
+    }
   ],
   "tools": [
     {
-      "slug":"photo-restyle","name":"照片风格转换","summary":"给熟悉的风景，换一种艺术表达。",
-      "description":"将照片转换为水彩、插画等视觉风格。保留原有构图，通过独立工作台选择风格并预览生成结果。此工具正在开发，当前不接收上传。",
-      "category":"image","icon":"image","color":"green","kind":"internal","status":"coming_soon",
-      "image":"/images/mountain.jpg","featured":true,"keywords":["照片","风格","水彩","photo","style"],
-      "features":["多种艺术风格","保留主体构图","预览与下载"],"updated_at":"2026-10-24","sort_order":1
+      "slug": "image-generate",
+      "name": "AI 图片生成",
+      "summary": "描述你的想法，生成一张属于你的图片。",
+      "description": "输入画面描述，选择图片比例，生成后即可预览和下载。支持中文描述，适合插画、产品概念和创意配图。",
+      "category": "image",
+      "icon": "image",
+      "color": "violet",
+      "kind": "internal",
+      "status": "available",
+      "featured": true,
+      "keywords": [
+        "AI",
+        "生图",
+        "文生图",
+        "image",
+        "generate"
+      ],
+      "features": [
+        "文字生成图片",
+        "三种图片比例",
+        "生成记录与下载"
+      ],
+      "updated_at": "2026-10-26",
+      "sort_order": 0
     },
     {
-      "slug":"background-removal","name":"智能抠图","summary":"去掉背景，让画面只留下主角。",
-      "description":"为商品、人物和日常照片移除背景，输出透明背景图片。此工具正在开发，当前不接收上传。",
-      "category":"image","icon":"scissors","color":"coral","kind":"internal","status":"coming_soon",
-      "image":"/images/product.jpg","featured":true,"keywords":["抠图","背景","透明","remove","background"],
-      "features":["主体识别","透明背景","PNG 导出"],"updated_at":"2026-10-23","sort_order":2
+      "slug": "photo-restyle",
+      "name": "照片风格转换",
+      "summary": "给熟悉的风景，换一种艺术表达。",
+      "description": "将照片转换为水彩、插画等视觉风格。保留原有构图，通过独立工作台选择风格并预览生成结果。此工具正在开发，当前不接收上传。",
+      "category": "image",
+      "icon": "image",
+      "color": "green",
+      "kind": "internal",
+      "status": "coming_soon",
+      "image": "/images/mountain.jpg",
+      "featured": true,
+      "keywords": [
+        "照片",
+        "风格",
+        "水彩",
+        "photo",
+        "style"
+      ],
+      "features": [
+        "多种艺术风格",
+        "保留主体构图",
+        "预览与下载"
+      ],
+      "updated_at": "2026-10-24",
+      "sort_order": 1
     },
     {
-      "slug":"text-polish","name":"文字润色","summary":"理顺表达，让每句话都恰到好处。",
-      "description":"调整文字的表达、语气与行文，在保留原意的基础上改善可读性。将提供原文与结果对照，支持复制结果。此工具正在开发，当前不发送模型请求。",
-      "category":"writing","icon":"text","color":"blue","kind":"internal","status":"coming_soon",
-      "featured":true,"keywords":["润色","文案","写作","polish","text"],
-      "features":["保留原意","调整语气","原文对照"],"updated_at":"2026-10-24","sort_order":3
+      "slug": "background-removal",
+      "name": "智能抠图",
+      "summary": "去掉背景，让画面只留下主角。",
+      "description": "为商品、人物和日常照片移除背景，输出透明背景图片。此工具正在开发，当前不接收上传。",
+      "category": "image",
+      "icon": "scissors",
+      "color": "coral",
+      "kind": "internal",
+      "status": "coming_soon",
+      "image": "/images/product.jpg",
+      "featured": true,
+      "keywords": [
+        "抠图",
+        "背景",
+        "透明",
+        "remove",
+        "background"
+      ],
+      "features": [
+        "主体识别",
+        "透明背景",
+        "PNG 导出"
+      ],
+      "updated_at": "2026-10-23",
+      "sort_order": 2
     },
     {
-      "slug":"food-analysis","name":"食物分析","summary":"从一餐开始，了解食物与营养。",
-      "description":"根据食物照片辅助识别食材并提供营养信息参考。实际结果受图片与份量影响，不用于医疗判断。此工具正在开发，当前不接收上传。",
-      "category":"life","icon":"coffee","color":"green","kind":"internal","status":"coming_soon",
-      "image":"/images/food.jpg","featured":true,"keywords":["食物","营养","热量","food"],
-      "features":["食材识别","营养参考","餐食记录"],"updated_at":"2026-10-22","sort_order":4
+      "slug": "text-polish",
+      "name": "文字润色",
+      "summary": "理顺表达，让每句话都恰到好处。",
+      "description": "调整文字的表达、语气与行文，在保留原意的基础上改善可读性。将提供原文与结果对照，支持复制结果。此工具正在开发，当前不发送模型请求。",
+      "category": "writing",
+      "icon": "text",
+      "color": "blue",
+      "kind": "internal",
+      "status": "coming_soon",
+      "featured": true,
+      "keywords": [
+        "润色",
+        "文案",
+        "写作",
+        "polish",
+        "text"
+      ],
+      "features": [
+        "保留原意",
+        "调整语气",
+        "原文对照"
+      ],
+      "updated_at": "2026-10-24",
+      "sort_order": 3
     },
     {
-      "slug":"image-compress","name":"图片压缩","summary":"减小图片体积，保留清晰细节。",
-      "description":"压缩 JPEG、PNG 和 WebP 图片，按目标格式与质量导出。将支持压缩前后体积对比。此工具正在开发，当前不接收上传。",
-      "category":"image","icon":"compress","color":"violet","kind":"internal","status":"coming_soon",
-      "featured":true,"keywords":["压缩","图片","compress","jpg","png","webp"],
-      "features":["常用图片格式","自选压缩质量","体积对比"],"updated_at":"2026-10-24","sort_order":5
+      "slug": "food-analysis",
+      "name": "食物分析",
+      "summary": "从一餐开始，了解食物与营养。",
+      "description": "根据食物照片辅助识别食材并提供营养信息参考。实际结果受图片与份量影响，不用于医疗判断。此工具正在开发，当前不接收上传。",
+      "category": "life",
+      "icon": "coffee",
+      "color": "green",
+      "kind": "internal",
+      "status": "coming_soon",
+      "image": "/images/food.jpg",
+      "featured": true,
+      "keywords": [
+        "食物",
+        "营养",
+        "热量",
+        "food"
+      ],
+      "features": [
+        "食材识别",
+        "营养参考",
+        "餐食记录"
+      ],
+      "updated_at": "2026-10-22",
+      "sort_order": 4
     },
     {
-      "slug":"birthday-message","name":"生日祝福","summary":"为特别的人，写一句用心的祝福。",
-      "description":"根据收件人、关系和语气生成生日祝福。此工具正在开发，当前不发送模型请求。",
-      "category":"life","icon":"gift","color":"coral","kind":"internal","status":"coming_soon",
-      "featured":true,"keywords":["生日","祝福","birthday"],
-      "features":["自选关系","多种语气","一键复制"],"updated_at":"2026-10-21","sort_order":6
+      "slug": "image-compress",
+      "name": "图片压缩",
+      "summary": "减小图片体积，保留清晰细节。",
+      "description": "压缩 JPEG、PNG 和 WebP 图片，按目标格式与质量导出。将支持压缩前后体积对比。此工具正在开发，当前不接收上传。",
+      "category": "image",
+      "icon": "compress",
+      "color": "violet",
+      "kind": "internal",
+      "status": "coming_soon",
+      "featured": true,
+      "keywords": [
+        "压缩",
+        "图片",
+        "compress",
+        "jpg",
+        "png",
+        "webp"
+      ],
+      "features": [
+        "常用图片格式",
+        "自选压缩质量",
+        "体积对比"
+      ],
+      "updated_at": "2026-10-24",
+      "sort_order": 5
     },
     {
-      "slug":"format-convert","name":"格式转换","summary":"让图片适配接下来的每个场景。",
-      "description":"在常见图片格式间转换，并按需调整尺寸。此工具正在开发，当前不接收上传。",
-      "category":"utility","icon":"refresh","color":"amber","kind":"internal","status":"coming_soon",
-      "featured":true,"keywords":["转换","格式","convert","format"],
-      "features":["图片格式转换","尺寸调整","结果下载"],"updated_at":"2026-10-20","sort_order":7
+      "slug": "birthday-message",
+      "name": "生日祝福",
+      "summary": "为特别的人，写一句用心的祝福。",
+      "description": "根据收件人、关系和语气生成生日祝福。此工具正在开发，当前不发送模型请求。",
+      "category": "life",
+      "icon": "gift",
+      "color": "coral",
+      "kind": "internal",
+      "status": "coming_soon",
+      "featured": true,
+      "keywords": [
+        "生日",
+        "祝福",
+        "birthday"
+      ],
+      "features": [
+        "自选关系",
+        "多种语气",
+        "一键复制"
+      ],
+      "updated_at": "2026-10-21",
+      "sort_order": 6
     },
     {
-      "slug":"copy-rewrite","name":"文案改写","summary":"保留你的想法，试试另一种表达。",
-      "description":"按用途改写已有文字，提供不同表达方向供选择。此工具正在开发，当前不发送模型请求。",
-      "category":"writing","icon":"pen","color":"violet","kind":"internal","status":"coming_soon",
-      "featured":true,"keywords":["改写","文案","rewrite","copy"],
-      "features":["多种表达","用途选择","保留核心信息"],"updated_at":"2026-10-19","sort_order":8
+      "slug": "format-convert",
+      "name": "格式转换",
+      "summary": "让图片适配接下来的每个场景。",
+      "description": "在常见图片格式间转换，并按需调整尺寸。此工具正在开发，当前不接收上传。",
+      "category": "utility",
+      "icon": "refresh",
+      "color": "amber",
+      "kind": "internal",
+      "status": "coming_soon",
+      "featured": true,
+      "keywords": [
+        "转换",
+        "格式",
+        "convert",
+        "format"
+      ],
+      "features": [
+        "图片格式转换",
+        "尺寸调整",
+        "结果下载"
+      ],
+      "updated_at": "2026-10-20",
+      "sort_order": 7
     },
     {
-      "slug":"squoosh","name":"Squoosh","summary":"在浏览器中对比图片压缩效果。",
-      "description":"GoogleChromeLabs 的在线图片压缩工具。前往站外工具使用，上传与处理规则以对方网站为准。",
-      "category":"image","icon":"compress","color":"violet","kind":"external","status":"available",
-      "external_url":"https://squoosh.app/","keywords":["压缩","图片","squoosh"],
-      "features":["图片压缩","效果对照","浏览器工具"],"updated_at":"2026-10-24","sort_order":9
-    },
-    {
-      "slug":"photopea","name":"Photopea","summary":"打开浏览器，开始编辑图像。",
-      "description":"在线图像编辑器。前往站外工具使用，文件支持与收费规则以对方网站为准。",
-      "category":"image","icon":"layers","color":"green","kind":"external","status":"available",
-      "external_url":"https://www.photopea.com/","keywords":["编辑","图层","psd","photopea"],
-      "features":["图像编辑","图层操作","在线使用"],"updated_at":"2026-10-23","sort_order":10
-    },
-    {
-      "slug":"excalidraw","name":"Excalidraw","summary":"把脑海中的想法，画得更清楚。",
-      "description":"手绘风格的在线白板。前往站外工具使用，数据保存与协作规则以对方网站为准。",
-      "category":"utility","icon":"pen","color":"blue","kind":"external","status":"available",
-      "external_url":"https://excalidraw.com/","keywords":["白板","画图","流程","excalidraw"],
-      "features":["自由绘图","流程表达","在线白板"],"updated_at":"2026-10-22","sort_order":11
-    },
-    {
-      "slug":"json-formatter","name":"JSON Editor Online","summary":"整理、查看和编辑 JSON 数据。",
-      "description":"在线 JSON 编辑工具。前往站外工具使用；请勿向第三方工具提交密钥或其他敏感内容。",
-      "category":"utility","icon":"code","color":"amber","kind":"external","status":"available",
-      "external_url":"https://jsoneditoronline.org/","keywords":["json","格式化","开发","数据"],
-      "features":["结构查看","格式整理","数据编辑"],"updated_at":"2026-10-21","sort_order":12
+      "slug": "copy-rewrite",
+      "name": "文案改写",
+      "summary": "保留你的想法，试试另一种表达。",
+      "description": "按用途改写已有文字，提供不同表达方向供选择。此工具正在开发，当前不发送模型请求。",
+      "category": "writing",
+      "icon": "pen",
+      "color": "violet",
+      "kind": "internal",
+      "status": "coming_soon",
+      "featured": true,
+      "keywords": [
+        "改写",
+        "文案",
+        "rewrite",
+        "copy"
+      ],
+      "features": [
+        "多种表达",
+        "用途选择",
+        "保留核心信息"
+      ],
+      "updated_at": "2026-10-19",
+      "sort_order": 8
     }
   ]
 }

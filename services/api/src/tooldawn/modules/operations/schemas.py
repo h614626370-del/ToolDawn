@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Annotated, Literal
 from urllib.parse import urlsplit
 from uuid import UUID
 
@@ -15,6 +15,7 @@ from pydantic import (
 
 from tooldawn.modules.ai_tools.registry import TOOLS
 from tooldawn.modules.billing.schemas import CreditPackage
+from tooldawn.modules.operations.capabilities import Capability
 
 
 class StrictInput(BaseModel):
@@ -59,7 +60,7 @@ class RuntimeConfig(StrictInput):
 
     @model_validator(mode="after")
     def validate_values(self):
-        if any(slug not in TOOLS for slug in self.tool_overrides):
+        if any(slug not in {*TOOLS, "image-generate"} for slug in self.tool_overrides):
             raise ValueError("Unknown internal tool")
         if len({p.id for p in self.credit_packages}) != len(self.credit_packages):
             raise ValueError("Package IDs must be unique")
@@ -89,12 +90,30 @@ class PaymentConfigInput(StrictInput):
 
 
 class AccountInput(StrictInput):
+    capability_models: dict[Capability, Annotated[str, Field(min_length=1, max_length=120)]] = (
+        Field(default_factory=dict, max_length=4)
+    )
+    capabilities: list[Capability] = Field(
+        default_factory=lambda: ["text"], min_length=1, max_length=4
+    )
     name: str = Field(min_length=1, max_length=80)
     base_url: str = Field(min_length=8, max_length=500)
     api_key: SecretStr | None = None
     model: str = Field(min_length=1, max_length=120)
     enabled: bool = True
     revision: int = Field(default=0, ge=0)
+
+    @model_validator(mode="after")
+    def validate_models(self):
+        if set(self.capability_models) - set(self.capabilities):
+            raise ValueError("仅可为已选择的账号能力配置模型")
+        self.model = self.model.strip()
+        self.capability_models = {
+            key: value.strip() for key, value in self.capability_models.items()
+        }
+        if not self.model or any(not value for value in self.capability_models.values()):
+            raise ValueError("模型名称不能为空")
+        return self
 
     @field_validator("base_url")
     @classmethod
@@ -111,6 +130,18 @@ class AccountInput(StrictInput):
         ):
             raise ValueError("Base URL must use HTTPS without credentials or query strings")
         return value.rstrip("/")
+
+
+class AccountModelDiscoveryInput(StrictInput):
+    base_url: str = Field(min_length=8, max_length=500)
+    api_key: SecretStr | None = None
+    account_id: UUID | None = None
+    revision: int = Field(default=0, ge=0)
+
+    @field_validator("base_url")
+    @classmethod
+    def validate_url(cls, value):
+        return AccountInput.validate_url(value)
 
 
 class TicketInput(StrictInput):

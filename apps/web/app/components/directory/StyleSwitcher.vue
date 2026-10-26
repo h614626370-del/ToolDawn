@@ -22,7 +22,7 @@ function choose(value: string) {
       <div class="style-popover-heading"><strong>{{ $t('选择你的风格') }}</strong><span>{{ $t('自动记住选择') }}</span></div>
       <div class="style-options" role="group" :aria-label="$t('切换风格')">
         <button v-for="item in styles" :key="item.id" class="style-option" :aria-pressed="selected === item.id" :data-style-option="item.id" @click="choose(item.id)">
-          <img :src="`/images/directory/${item.scene}-small.webp`" alt="" width="96" height="54" loading="lazy">
+          <img v-if="item.preview" :src="item.preview" alt="" width="96" height="54" loading="lazy"><span v-else class="style-preview-cream" aria-hidden="true" />
           <span><strong>{{ $t(item.name) }}</strong><small>{{ $t(item.description) }}</small></span>
           <AppIcon v-if="selected === item.id" name="check" :size="18" />
         </button>

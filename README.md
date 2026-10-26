@@ -144,4 +144,10 @@ PostgreSQL 集成测试需要已迁移、已导入种子的专用测试库，设
 
 工具预览图片存放于 `apps/web/public/images/`。来源记录于 `docs/assets.md`。已确认的设计原型保存在 `output/imagegen/`。
 
+AI 图片生成工作台位于 `/tools/image-generate`，需要独立图片 Worker。账号分组接入、启动方式、任务恢复及结果存储说明见 [图片工具](docs/image-tools.md)。
+
 完整功能规划见 `docs/development-plan.md`。
+
+站内公告已支持后台发布与归档、Markdown 预览、定时展示、公开/仅登录可见、铃铛与弹窗提醒和版本化已读记录。后台入口为 `/admin/announcements`，使用与验证说明见 [站内公告](docs/announcements.md)。
+
+- 2026-10-26 产品范围调整：本站仅提供自有工具，不收录站外工具。迁移 `0009_internal_tools_only` 删除站外目录记录并禁止新增；原有本站工具、账号和业务记录保留。

@@ -15,7 +15,7 @@ export default defineNuxtConfig({
     vueI18n: './i18n.config.ts',
   },
   components: [{ path: '~/components', pathPrefix: false }],
-  css: ['~/assets/css/main.css', '~/assets/css/auth.css', '~/assets/css/admin.css', '~/assets/css/billing.css', '~/assets/css/workspace.css', '~/assets/css/operations.css', '~/assets/css/directory-styles.css', '~/assets/css/admin-themes.css'],
+  css: ['~/assets/css/main.css', '~/assets/css/auth.css', '~/assets/css/admin.css', '~/assets/css/billing.css', '~/assets/css/workspace.css', '~/assets/css/operations.css', '~/assets/css/directory-palette.css', '~/assets/css/directory-styles.css', '~/assets/css/admin-themes.css', '~/assets/css/directory-navigation.css', '~/assets/css/announcements.css', '~/assets/css/directory-wallpapers.css'],
   vite: { plugins: [tailwindcss()] },
   runtimeConfig: {
     apiBase: 'http://127.0.0.1:8000',

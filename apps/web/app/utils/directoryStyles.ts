@@ -1,11 +1,11 @@
 import type { Tool } from '~/types/catalog'
 
 export const directoryStyles = [
-  { id: 'midnight', name: '午夜暖灯', description: '深蓝与暖金，安静的夜间工作室', scene: 'scene-midnight', color: '#dcb879', slides: ['email-writer', 'text-polish', 'text-summary'] },
-  { id: 'cream', name: '奶油拼贴', description: '柔和杏色，错落有致的创意拼贴', scene: 'scene-cream', color: '#b45639', slides: ['text-polish', 'birthday-message', 'copy-rewrite'] },
-  { id: 'olive', name: '橄榄工作台', description: '自然日光，按用途展开的工具架', scene: 'scene-olive', color: '#536341', slides: ['text-summary', 'text-polish', 'text-translate'] },
-  { id: 'plum', name: '酒红夜色', description: '酒红与玫瑰，温暖的夜色图册', scene: 'scene-plum', color: '#eab4aa', slides: ['birthday-message', 'email-writer', 'copy-rewrite'] },
-  { id: 'library', name: '墨绿书房', description: '墨绿与纸白，井然有序的灵感书房', scene: 'scene-library', color: '#c6a452', slides: ['text-translate', 'text-summary', 'email-writer'] },
+  { id: 'cream', name: '奶油', description: '默认主题 · 温暖纯色，轻松专注', preview: '', color: '#b45639', slides: ['text-polish', 'birthday-message', 'copy-rewrite'] },
+  { id: 'midnight', name: '远山夜色', description: '全屏背景 · 层叠远山与深蓝夜空', preview: '/images/wallpapers/mountains-small.webp', color: '#dcb879', slides: ['text-polish', 'birthday-message', 'copy-rewrite'] },
+  { id: 'olive', name: '林间光影', description: '全屏背景 · 日光穿过枝叶，舒展安静', preview: '/images/wallpapers/forest-small.webp', color: '#536341', slides: ['text-polish', 'birthday-message', 'copy-rewrite'] },
+  { id: 'plum', name: '暮色微光', description: '全屏背景 · 落日、湖面与柔和暮色', preview: '/images/wallpapers/dusk-small.webp', color: '#eab4aa', slides: ['text-polish', 'birthday-message', 'copy-rewrite'] },
+  { id: 'library', name: '晴空海岸', description: '全屏背景 · 白色崖岸与碧蓝海面', preview: '/images/wallpapers/coast-small.webp', color: '#216a7a', slides: ['text-polish', 'birthday-message', 'copy-rewrite'] },
 ] as const
 
 export type DirectoryStyleId = typeof directoryStyles[number]['id']

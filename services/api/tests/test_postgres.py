@@ -46,5 +46,6 @@ def test_postgres_catalog_matches_seed_queries():
             assert response.status_code == 200
             assert response.json() == reference.get("/api/v1/tools", params=params).json()
         assert (
-            pg.get("/api/v1/tools/squoosh").json() == reference.get("/api/v1/tools/squoosh").json()
+            pg.get("/api/v1/tools/image-compress").json()
+            == reference.get("/api/v1/tools/image-compress").json()
         )

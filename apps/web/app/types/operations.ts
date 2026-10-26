@@ -1,5 +1,8 @@
+import type { ModelCapability } from './model-groups'
 export interface Page<T> { items: T[]; total: number }
 export interface ModelAccount {
+  capability_models: Partial<Record<ModelCapability, string>>
+  capabilities: ModelCapability[]; cooldown_until: string | null; last_failure_code: string | null
   id: string; name: string; base_url: string; model: string; enabled: boolean
   key_set: boolean; revision: number; created_at: string; updated_at: string
   last_test_at: string | null; last_test_ok: boolean | null; last_test_ms: number | null
@@ -16,6 +19,8 @@ export interface RuntimeConfig {
   credit_packages: { id: string; credits: number; unit_amount: number; currency: string }[]
 }
 export interface Usage {
+  has_output?: boolean; image_url?: string | null; result_preview?: string | null
+  group_name?: string | null; attempts?: { account_id: string; code: string }[]
   id: string; tool_slug: string; status: 'running' | 'succeeded' | 'failed'; cost: number
   charged: number; language: string; model: string | null; duration_ms: number | null
   email: string; account_name: string | null; created_at: string; completed_at: string | null

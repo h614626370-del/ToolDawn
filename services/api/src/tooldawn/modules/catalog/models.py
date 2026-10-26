@@ -1,4 +1,5 @@
 from datetime import date
+from uuid import UUID
 
 from sqlalchemy import JSON, Boolean, CheckConstraint, Date, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
@@ -20,6 +21,7 @@ class CategoryRecord(Base):
 class ToolRecord(Base):
     __tablename__ = "tools"
     __table_args__ = (
+        CheckConstraint("kind = 'internal'", name="tools_internal_only"),
         CheckConstraint("kind IN ('internal', 'external')", name="tools_kind"),
         CheckConstraint("status IN ('available', 'coming_soon')", name="tools_status"),
         CheckConstraint(
@@ -30,6 +32,8 @@ class ToolRecord(Base):
     )
 
     slug: Mapped[str] = mapped_column(String(100), primary_key=True)
+    model_group_id: Mapped[UUID | None] = mapped_column(ForeignKey("model_groups.id"), index=True)
+    model_capability: Mapped[str | None] = mapped_column(String(30))
     name: Mapped[str] = mapped_column(String(100))
     summary: Mapped[str] = mapped_column(String(300))
     description: Mapped[str] = mapped_column(Text)

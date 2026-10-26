@@ -7,9 +7,11 @@ from tooldawn.config import Settings
 from tooldawn.infra.database import Base
 from tooldawn.modules.admin import models as admin_models  # noqa: F401
 from tooldawn.modules.ai_tools import models as ai_models  # noqa: F401
+from tooldawn.modules.announcements import models as announcement_models  # noqa: F401
 from tooldawn.modules.auth import models as auth_models  # noqa: F401
 from tooldawn.modules.billing import models as billing_models  # noqa: F401
 from tooldawn.modules.catalog import models  # noqa: F401
+from tooldawn.modules.image_tools import models as image_models  # noqa: F401
 from tooldawn.modules.operations import models as operations_models  # noqa: F401
 
 url = Settings().database_url

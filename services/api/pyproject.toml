@@ -15,6 +15,7 @@ dependencies = [
   "stripe>=16.0.0",
   "httpx>=0.28,<1",
   "cryptography>=46,<51",
+  "pillow>=12.3,<13",
 ]
 
 [dependency-groups]

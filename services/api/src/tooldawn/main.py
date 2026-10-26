@@ -17,6 +17,9 @@ from tooldawn.modules.admin.routes import router as admin_router
 from tooldawn.modules.ai_tools.gateway import ModelGateway
 from tooldawn.modules.ai_tools.repository import TextRunRepository
 from tooldawn.modules.ai_tools.routes import router as ai_tools_router
+from tooldawn.modules.announcements.repository import AnnouncementRepository
+from tooldawn.modules.announcements.routes import router as announcement_router
+from tooldawn.modules.auth.avatar import router as avatar_router
 from tooldawn.modules.auth.bootstrap import bootstrap_admin
 from tooldawn.modules.auth.limiter import AuthLimiter
 from tooldawn.modules.auth.profile import router as profile_router
@@ -30,8 +33,11 @@ from tooldawn.modules.billing.repository import BillingRepository
 from tooldawn.modules.billing.routes import router as billing_router
 from tooldawn.modules.catalog.repository import PostgresCatalogRepository, SeedCatalogRepository
 from tooldawn.modules.catalog.routes import router as catalog_router
+from tooldawn.modules.image_tools.repository import ImageRepository
+from tooldawn.modules.image_tools.routes import router as image_tools_router
 from tooldawn.modules.operations.accounts import AccountRepository
 from tooldawn.modules.operations.analytics import AnalyticsRepository
+from tooldawn.modules.operations.groups import GroupRepository
 from tooldawn.modules.operations.routes import router as operations_router
 from tooldawn.modules.operations.settings import SettingsRepository
 from tooldawn.modules.operations.tickets import TicketRepository
@@ -49,10 +55,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         app.state.admin = None
         app.state.billing = None
         app.state.text_runs = None
+        app.state.image_runs = None
         app.state.control = None
         app.state.accounts = None
+        app.state.model_groups = None
         app.state.analytics = None
         app.state.tickets = None
+        app.state.announcements = None
         app.state.started_at = perf_counter()
         app.state.metrics = HttpMetrics()
         app.state.model_gateway = ModelGateway(settings)
@@ -66,9 +75,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             app.state.billing = BillingRepository(sessions)
             app.state.text_runs = TextRunRepository(app.state.billing)
             app.state.control = SettingsRepository(sessions, settings)
+            app.state.image_runs = ImageRepository(app.state.billing, app.state.control.box)
             app.state.accounts = AccountRepository(app.state.control)
+            app.state.model_groups = GroupRepository(sessions)
             app.state.analytics = AnalyticsRepository(sessions)
             app.state.tickets = TicketRepository(sessions)
+            app.state.announcements = AnnouncementRepository(sessions)
             if settings.auth_secret and app.state.redis is not None:
                 app.state.auth = AuthService(
                     AuthRepository(sessions),
@@ -103,10 +115,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(catalog_router, prefix="/api/v1")
     app.include_router(auth_router, prefix="/api/v1")
     app.include_router(admin_router, prefix="/api/v1")
+    app.include_router(announcement_router, prefix="/api/v1")
     app.include_router(billing_router, prefix="/api/v1")
     app.include_router(provider_router, prefix="/api/v1")
     app.include_router(ai_tools_router, prefix="/api/v1")
+    app.include_router(image_tools_router, prefix="/api/v1")
     app.include_router(profile_router, prefix="/api/v1")
+    app.include_router(avatar_router, prefix="/api/v1")
     app.include_router(recovery_router, prefix="/api/v1")
     app.include_router(operations_router, prefix="/api/v1")
     return app

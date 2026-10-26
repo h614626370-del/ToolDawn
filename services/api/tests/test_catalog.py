@@ -14,16 +14,16 @@ def client():
 
 
 def test_search_category_and_pagination(client):
-    response = client.get("/api/v1/tools", params={"q": "压缩", "category": "image", "limit": 1})
+    response = client.get("/api/v1/tools", params={"category": "image", "limit": 1})
     assert response.status_code == 200
     first = response.json()
-    assert first["total"] == 2
+    assert first["total"] == 4
     assert first["next_cursor"] == 1
     second = client.get(
-        "/api/v1/tools", params={"q": "压缩", "category": "image", "limit": 1, "cursor": 1}
+        "/api/v1/tools", params={"category": "image", "limit": 1, "cursor": 1}
     ).json()
     assert second["items"][0]["slug"] != first["items"][0]["slug"]
-    assert second["next_cursor"] is None
+    assert second["next_cursor"] == 2
 
 
 @pytest.mark.parametrize("query", ["%", "_", "不存在的工具"])
@@ -70,9 +70,9 @@ def test_unfinished_tools_are_not_advertised_as_available(client):
     tool = client.get("/api/v1/tools/photo-restyle").json()
     assert tool["status"] == "coming_soon"
     assert tool["external_url"] is None
-    available = client.get("/api/v1/tools/squoosh").json()
-    assert available["status"] == "available"
-    assert available["external_url"].startswith("https://")
+    for slug in ("squoosh", "photopea", "excalidraw", "json-formatter"):
+        assert client.get(f"/api/v1/tools/{slug}").status_code == 404
+    assert all(t["kind"] == "internal" for t in client.get("/api/v1/tools").json()["items"])
 
 
 def test_text_tools_expose_setup_state_without_prompts(client):

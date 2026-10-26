@@ -18,6 +18,7 @@ from tooldawn.modules.admin.schemas import (
 )
 from tooldawn.modules.auth.models import EmailChallenge, SessionRecord, UserRecord
 from tooldawn.modules.catalog.models import CategoryRecord, ToolRecord
+from tooldawn.modules.operations.models import ModelGroup
 
 
 def audit(db, actor: UUID, action: str, target: str, fields: list[str]):
@@ -127,11 +128,16 @@ class AdminRepository:
 
     async def save_tool(self, data: ToolInput, actor: UUID, create: bool):
         values = data.model_dump(mode="json", exclude={"revision"})
+        values["model_group_id"] = data.model_group_id
         values["updated_at"] = datetime.now(UTC).date()
         try:
             async with self.sessions.begin() as db:
                 if await db.get(CategoryRecord, data.category) is None:
                     raise HTTPException(422, "分类不存在，请刷新后重试。")
+                if data.model_group_id:
+                    group = await db.get(ModelGroup, data.model_group_id, with_for_update=True)
+                    if not group:
+                        raise HTTPException(422, "分组不存在，请刷新后重试。")
                 if create:
                     record = ToolRecord(**values, revision=1)
                     db.add(record)

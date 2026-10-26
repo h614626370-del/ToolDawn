@@ -4,7 +4,9 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl, model_validator
 
+from tooldawn.modules.ai_tools.registry import TOOLS
 from tooldawn.modules.catalog.schemas import Tool
+from tooldawn.modules.operations.capabilities import Capability
 
 Slug = Annotated[str, Field(pattern=r"^[a-z0-9]+(?:-[a-z0-9]+)*$", max_length=80)]
 Color = Literal["green", "blue", "coral", "violet", "amber"]
@@ -49,13 +51,15 @@ class ToolInput(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
     slug: Slug
+    model_group_id: UUID | None = None
+    model_capability: Capability | None = None
     name: ShortText
     summary: str = Field(min_length=1, max_length=300)
     description: str = Field(min_length=1, max_length=10000)
     category: Slug
     icon: Icon = "wrench"
     color: Color = "blue"
-    kind: Literal["internal", "external"]
+    kind: Literal["internal"] = "internal"
     status: Literal["available", "coming_soon"]
     external_url: HttpUrl | None = None
     image: str | None = Field(default=None, pattern=r"^/images/[a-zA-Z0-9_-]+\.(jpg|png|webp)$")
@@ -68,20 +72,26 @@ class ToolInput(BaseModel):
 
     @model_validator(mode="after")
     def destination(self):
-        if self.kind == "external":
-            if (
-                not self.external_url
-                or self.external_url.scheme != "https"
-                or self.external_url.username
-                or self.external_url.password
-            ):
-                raise ValueError("站外工具需要不含账号密码的 HTTPS 地址")
-        elif self.external_url is not None or self.status == "available":
-            raise ValueError("本站工作台尚未实现，请保持开发中且不填写站外地址")
+        if self.slug in TOOLS:
+            if self.model_capability not in (None, "text"):
+                raise ValueError("文字工具仅支持文字生成能力")
+            self.model_capability = "text"
+        if self.model_group_id and not self.model_capability:
+            raise ValueError("绑定分组前请选择所需能力")
+        if self.external_url is not None:
+            raise ValueError("本站工具不支持站外地址")
+        if self.slug == "image-generate":
+            if self.model_capability not in (None, "image_generate"):
+                raise ValueError("图片生成工具仅支持图片生成能力")
+            self.model_capability = "image_generate"
+        if self.status == "available" and self.slug not in {*TOOLS, "image-generate"}:
+            raise ValueError("工作台尚未实现，请保持开发中")
         return self
 
 
 class AdminTool(Tool):
+    model_group_id: UUID | None = None
+    model_capability: Capability | None = None
     published: bool
     revision: int
 

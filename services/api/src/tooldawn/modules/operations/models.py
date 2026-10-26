@@ -29,6 +29,33 @@ class ModelAccount(Base):
     last_test_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     last_test_ok: Mapped[bool | None] = mapped_column(Boolean)
     last_test_ms: Mapped[int | None] = mapped_column(Integer)
+    capabilities: Mapped[list[str]] = mapped_column(JSON, default=lambda: ["text"])
+    capability_models: Mapped[dict[str, str]] = mapped_column(JSON, default=dict)
+    cooldown_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    last_failure_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    last_failure_code: Mapped[str | None] = mapped_column(String(40))
+
+
+class ModelGroup(Base):
+    __tablename__ = "model_groups"
+    id: Mapped[UUID] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(80))
+    description: Mapped[str] = mapped_column(String(500), default="")
+    enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+    revision: Mapped[int] = mapped_column(Integer, default=1)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class ModelGroupMember(Base):
+    __tablename__ = "model_group_members"
+    group_id: Mapped[UUID] = mapped_column(
+        ForeignKey("model_groups.id", ondelete="CASCADE"), primary_key=True
+    )
+    account_id: Mapped[UUID] = mapped_column(
+        ForeignKey("model_accounts.id", ondelete="CASCADE"), primary_key=True
+    )
+    priority: Mapped[int] = mapped_column(Integer)
 
 
 class TicketRecord(Base):

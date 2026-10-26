@@ -1,7 +1,9 @@
 import type { Tool } from './catalog'
 import type { AuthUser } from './auth'
 
-export interface AdminTool extends Tool { published: boolean; revision: number }
+import type { ModelCapability } from './model-groups'
+
+export interface AdminTool extends Tool { model_group_id: string | null; model_capability: ModelCapability | null; published: boolean; revision: number }
 export type ToolInput = Omit<AdminTool, 'updated_at'>
 export interface AdminCategory {
   slug: string

@@ -12,7 +12,7 @@ COOKIE_NAME = "tooldawn_session"
 def auth_service(request: Request) -> AuthService:
     service = request.app.state.auth
     if service is None:
-        raise HTTPException(503, "登录服务尚未配置，请稍后重试。")
+        raise HTTPException(503, "服务暂时不可用，请稍后重试。")
     return service
 
 

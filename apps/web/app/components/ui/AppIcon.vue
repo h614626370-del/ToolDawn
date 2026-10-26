@@ -5,8 +5,9 @@ import {
   LoaderCircle, RefreshCw, Scissors, Search, Sparkles, Sun, Moon, Text,
   Wrench, X, Minimize2, PenLine, CircleAlert, Mail, LogIn, LogOut, UserRound,
   Plus, Save, ShieldCheck, Ban, Globe2, Wallet, CreditCard, ReceiptText,
-  Copy, Download, Trash2,
+  Copy, Download, Trash2, Menu, Bell, PanelLeftClose, PanelLeftOpen,
   Activity, ChartNoAxesCombined, Settings2, KeyRound, LifeBuoy, History, Send, Eye,
+  Upload, Maximize2, Minus, SlidersHorizontal,
 } from '@lucide/vue'
 
 const props = withDefaults(defineProps<{ name: string; size?: number }>(), { size: 20 })
@@ -20,9 +21,11 @@ const icons: Record<string, typeof Search> = {
   mail: Mail, login: LogIn, logout: LogOut, user: UserRound,
   plus: Plus, save: Save, shield: ShieldCheck, ban: Ban,
   globe: Globe2, wallet: Wallet, card: CreditCard, receipt: ReceiptText,
-  copy: Copy, download: Download, trash: Trash2,
+  copy: Copy, download: Download, trash: Trash2, menu: Menu, bell: Bell,
+  'panel-close': PanelLeftClose, 'panel-open': PanelLeftOpen,
   activity: Activity, chart: ChartNoAxesCombined, settings: Settings2, key: KeyRound,
   support: LifeBuoy, history: History, send: Send, eye: Eye,
+  upload: Upload, maximize: Maximize2, minus: Minus, sliders: SlidersHorizontal,
 }
 const icon = computed(() => icons[props.name] || Compass)
 </script>

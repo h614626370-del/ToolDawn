@@ -9,7 +9,7 @@ from tooldawn.modules.admin.models import AuditRecord
 from tooldawn.modules.ai_tools.models import TextRunRecord
 from tooldawn.modules.auth.models import SessionRecord, UserRecord
 from tooldawn.modules.billing.models import OrderRecord
-from tooldawn.modules.operations.models import ModelAccount, TicketRecord
+from tooldawn.modules.operations.models import ModelAccount, ModelGroup, TicketRecord
 
 
 class AnalyticsRepository:
@@ -18,12 +18,13 @@ class AnalyticsRepository:
 
     async def usage(self, owner, q, status, slug, start, end, offset, limit):
         query = (
-            select(TextRunRecord, UserRecord.email, ModelAccount.name)
+            select(TextRunRecord, UserRecord.email, ModelAccount.name, ModelGroup.name)
             .join(
                 UserRecord,
                 UserRecord.id == TextRunRecord.user_id,
             )
             .outerjoin(ModelAccount, ModelAccount.id == TextRunRecord.account_id)
+            .outerjoin(ModelGroup, ModelGroup.id == TextRunRecord.group_id)
         )
         if owner:
             query = query.where(TextRunRecord.user_id == owner)
@@ -68,9 +69,27 @@ class AnalyticsRepository:
                         },
                         "email": email,
                         "account_name": name,
+                        **(
+                            {
+                                "has_output": bool(row.output),
+                                "image_url": row.output
+                                if row.tool_slug == "image-generate"
+                                else None,
+                                "result_preview": row.output[:180]
+                                if row.output and row.tool_slug != "image-generate"
+                                else None,
+                            }
+                            if owner is not None
+                            else {}
+                        ),
+                        **(
+                            {"group_name": group_name, "attempts": row.attempts}
+                            if owner is None
+                            else {}
+                        ),
                         "charged": row.cost if row.status != "failed" else 0,
                     }
-                    for row, email, name in rows
+                    for row, email, name, group_name in rows
                 ],
             }
 

@@ -1,7 +1,16 @@
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Index, String, Text, UniqueConstraint
+from sqlalchemy import (
+    JSON,
+    CheckConstraint,
+    DateTime,
+    ForeignKey,
+    Index,
+    String,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from tooldawn.infra.database import Base
@@ -32,5 +41,9 @@ class TextRunRecord(Base):
         ForeignKey("model_accounts.id", ondelete="SET NULL")
     )
     model: Mapped[str | None] = mapped_column(String(120))
+    group_id: Mapped[UUID | None] = mapped_column(
+        ForeignKey("model_groups.id", ondelete="SET NULL")
+    )
+    attempts: Mapped[list[dict]] = mapped_column(JSON, default=list)
     duration_ms: Mapped[int | None] = mapped_column()
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

@@ -39,6 +39,7 @@ class UserResponse(BaseModel):
     role: Literal["user", "admin"]
     created_at: datetime
     display_name: str = ""
+    avatar_url: str | None = None
     is_superadmin: bool = False
     must_change_password: bool = False
     has_password: bool = False

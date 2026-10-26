@@ -109,6 +109,28 @@ class TextRunRepository:
                     await self._fail(db, run)
             return Run.model_validate(run)
 
+    async def record_attempt(self, user_id, run_id, group_id, account_id, model, code):
+        async with self.sessions.begin() as db:
+            await self.billing._lock_user(db, user_id)
+            run = await db.get(TextRunRecord, run_id)
+            if not run or run.user_id != user_id or run.status != "running":
+                return
+            run.group_id, run.account_id, run.model = group_id, account_id, model
+            run.attempts = [*run.attempts, {"account_id": str(account_id), "code": code}]
+
+    async def previous(self, user_id, request_key, fingerprint):
+        async with self.sessions.begin() as db:
+            await self.billing._lock_user(db, user_id)
+            await self._expire(db, user_id)
+            run = await db.scalar(
+                select(TextRunRecord).where(
+                    TextRunRecord.user_id == user_id, TextRunRecord.request_key == request_key
+                )
+            )
+            if run and run.fingerprint != fingerprint:
+                raise HTTPException(409, "重复请求的内容不一致。")
+            return Run.model_validate(run) if run else None
+
     async def history(self, user_id: UUID, slug: str) -> list[Run]:
         async with self.sessions.begin() as db:
             await self.billing._lock_user(db, user_id)

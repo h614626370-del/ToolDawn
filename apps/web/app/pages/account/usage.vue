@@ -1,6 +1,6 @@
 <script setup lang="ts">
-definePageMeta({ middleware: 'account' })
+definePageMeta({ middleware:'account', layout:'account' })
 const { t } = useI18n()
-useSeoMeta({ title: () => t('使用记录'), robots: 'noindex, nofollow' })
+useSeoMeta({ title:() => `${t('使用记录')} · ToolDawn`, robots:'noindex, nofollow' })
 </script>
-<template><div class="container account-page operations-page"><h1>{{ $t('使用记录') }}</h1><AccountNav /><UsageList /></div></template>
+<template><div><AccountHeading title="使用记录" description="找回每一次创作，继续完成你的想法。" /><AccountUsage /></div></template>

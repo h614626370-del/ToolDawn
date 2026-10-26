@@ -32,7 +32,7 @@ Limit = Annotated[int, Query(ge=1, le=100)]
 
 def repository(request: Request) -> BillingRepository:
     if request.app.state.billing is None:
-        raise HTTPException(503, "积分服务需要数据库连接。")
+        raise HTTPException(503, "服务暂时不可用，请稍后重试。")
     return request.app.state.billing
 
 

@@ -1,0 +1,66 @@
+.announcement-center { display: flex; align-items: center; }
+.announcement-bell { position: relative; display: grid; place-items: center; width: 40px; min-height: 44px; border-radius: 8px; color: inherit; }
+.announcement-bell:hover { background: color-mix(in srgb, currentColor 10%, transparent); }
+.announcement-dot { position: absolute; width: 7px; height: 7px; border-radius: 50%; background: #f4cc3b; right: 8px; top: 9px; outline: 2px solid var(--header); }
+.announcement-dialog { margin: auto; padding: 0; width: min(620px, calc(100% - 32px)); max-height: calc(100dvh - 48px); border: 1px solid var(--line); border-radius: 16px; background: var(--paper); color: var(--ink); box-shadow: 0 24px 90px #0004; overflow: auto; text-align: left; }
+.announcement-dialog::backdrop { background: #101b2280; }
+body:has(.announcement-dialog[open]) { overflow: hidden; }
+.announcement-dialog-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; padding: 26px 28px 22px; border-bottom: 1px solid var(--line); }
+.announcement-dialog-heading > div { min-width: 0; }
+.announcement-eyebrow { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); margin-bottom: 14px; }
+.announcement-dialog-heading h2 { font-size: 23px; font-weight: 650; line-height: 1.45; overflow-wrap: anywhere; text-wrap: balance; }
+.announcement-dialog-heading p { margin-top: 9px; color: var(--muted); font-size: 12px; line-height: 1.7; }
+.announcement-dialog .icon-button { color: var(--ink); flex-shrink: 0; width: 40px; height: 40px; }
+.announcement-dialog-content { padding: 22px 28px; }
+.announcement-dialog-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 10px; padding: 18px 28px; border-top: 1px solid var(--line); }
+.announcement-dialog .button { min-height: 44px; }
+.announcement-dialog .button.primary { background: var(--ink); color: var(--paper); border: 1px solid var(--ink); }
+.announcement-dialog .button.secondary { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+.announcement-dialog .text-button { color: var(--ink); text-decoration: underline; text-underline-offset: 4px; min-height: 44px; }
+.announcement-list-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+.announcement-list { padding: 0; margin: 0; list-style: none; }
+.announcement-list li + li { border-top: 1px solid var(--line); }
+.announcement-list li > button { display: flex; align-items: center; gap: 14px; padding: 18px 6px; width: 100%; text-align: left; border-radius: 6px; }
+.announcement-list li > button:hover { background: color-mix(in srgb, var(--ink) 5%, transparent); }
+.announcement-read-indicator { width: 7px; height: 7px; flex-shrink: 0; border-radius: 50%; border: 1px solid var(--muted); }
+.announcement-read-indicator.unread { background: var(--ink); border-color: var(--ink); }
+.announcement-list-copy { display: grid; gap: 7px; flex: 1; min-width: 0; }
+.announcement-list-copy strong { font-size: 14px; line-height: 1.6; overflow-wrap: anywhere; font-weight: 550; }
+.announcement-list-copy > span { color: var(--muted); font-size: 11px; }
+.announcement-empty { padding: 40px 8px; text-align: center; color: var(--muted); line-height: 1.8; font-size: 13px; }
+.announcement-empty > svg { margin: 0 auto 16px; }
+.announcement-empty h3 { font-size: 16px; color: var(--ink); margin-bottom: 6px; }
+.announcement-feedback { padding: 12px 14px; border: 1px solid var(--line); border-radius: 8px; margin-bottom: 16px; font-size: 13px; line-height: 1.7; }
+.announcement-body { line-height: 1.85; font-size: 14px; overflow-wrap: anywhere; max-width: 72ch; }
+.announcement-body > * + * { margin-top: 1em; }
+.announcement-body h1, .announcement-body h2, .announcement-body h3 { font-weight: 650; line-height: 1.5; text-wrap: balance; }
+.announcement-body h1 { font-size: 24px; }.announcement-body h2 { font-size: 20px; }.announcement-body h3 { font-size: 17px; }
+.announcement-body ul, .announcement-body ol { padding-left: 1.5em; list-style: revert; }
+.announcement-body li + li { margin-top: .4em; }
+.announcement-body a { text-decoration: underline; text-underline-offset: 3px; font-weight: 550; }
+.announcement-body code { background: color-mix(in srgb, var(--ink) 7%, transparent); border-radius: 4px; padding: 2px 4px; font-size: .9em; }
+.announcement-body pre { padding: 14px; overflow-x: auto; border: 1px solid var(--line); border-radius: 6px; }
+.announcement-body pre code { padding: 0; background: transparent; }
+.announcement-body blockquote { border-left: 3px solid var(--line); padding-left: 16px; color: var(--muted); }
+.announcement-body table { display: block; overflow-x: auto; border-collapse: collapse; }
+.announcement-body th, .announcement-body td { border: 1px solid var(--line); padding: 8px 12px; }
+.announcement-body hr { border: 0; border-top: 1px solid var(--line); margin-block: 24px; }
+.announcement-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 16px; margin-top: 20px; }
+.announcement-full-field { grid-column: 1 / -1; }
+.announcement-field-help { font-size: 12px; line-height: 1.8; color: var(--muted); margin-block: 8px; }
+.announcement-editor-tabs { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; font-size: 12px; }
+.announcement-editor-tabs > div { display: flex; gap: 4px; padding: 3px; border: 1px solid var(--line); border-radius: 7px; }
+.announcement-editor-tabs button { padding: 6px 12px; border-radius: 4px; }
+.announcement-editor-tabs button[aria-pressed="true"] { color: var(--admin-accent); background: var(--admin-active); }
+.announcement-preview { border: 1px solid var(--line); border-radius: 8px; padding: 18px; min-height: 220px; max-height: 400px; overflow: auto; }
+.announcement-admin-table td:first-child { min-width: 220px; max-width: 360px; }
+@media (max-width: 480px) {
+  .announcement-dialog { width: calc(100% - 24px); max-height: calc(100dvh - 24px); border-radius: 12px; }
+  .announcement-dialog-heading { padding: 20px 18px; gap: 10px; }
+  .announcement-dialog-heading h2 { font-size: 20px; }
+  .announcement-dialog-content { padding: 16px 18px; }
+  .announcement-dialog-actions { padding: 16px 18px; }
+  .announcement-form-grid { grid-template-columns: minmax(0, 1fr); }
+  .announcement-bell { width: 32px; }
+  .styled-directory-shell .header-actions { gap: 4px; }
+}

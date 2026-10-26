@@ -1,0 +1,43 @@
+/* Wallpaper is fixed to the viewport; theme changes never move the navigation. */
+.directory-palette { --wallpaper: none; --radius: 12px; position: relative; isolation: isolate; }
+.directory-palette::before { content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none; background: var(--wallpaper) center / cover no-repeat; }
+.directory-palette[data-directory-style="midnight"] { --wallpaper: url('/images/wallpapers/mountains.webp'); }
+.directory-palette[data-directory-style="olive"] { --wallpaper: url('/images/wallpapers/forest.webp'); }
+.directory-palette[data-directory-style="plum"] { --wallpaper: url('/images/wallpapers/dusk.webp'); }
+.directory-palette[data-directory-style="library"] {
+  --wallpaper: url('/images/wallpapers/coast.webp');
+  --canvas: #edf5f6; --paper: #f6fbfc; --ink: #203d47; --muted: #4d6670;
+  --line: #c6dce1; --accent: #216a7a; --accent-ink: #fff; --soft: #e0eef1;
+  --header: #edf5f6; --header-ink: var(--ink); --header-muted: var(--muted);
+  --scene-ink: #203d47; --scene-muted: #3f5d68; --scene-shade: #edf5f6;
+}
+.directory-palette:not([data-directory-style="cream"]) :is(.site-header, .site-footer) {
+  background: color-mix(in srgb, var(--header) 94%, transparent);
+  backdrop-filter: blur(12px);
+}
+.directory-palette:not([data-directory-style="cream"]) :is(.catalog-sidebar, .account-sidebar) {
+  background: color-mix(in srgb, var(--paper) 94%, transparent);
+}
+.directory-palette:not([data-directory-style="cream"]) :is(.directory-intro, .account-heading) {
+  background: color-mix(in srgb, var(--paper) 96%, transparent);
+  border: 1px solid var(--line); border-radius: 12px; padding: 22px 24px; margin-bottom: 24px;
+}
+.directory-palette:not([data-directory-style="cream"]) :is(.section-heading, .shelf-heading, .quick-tools h2) {
+  background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px;
+}
+.directory-palette:not([data-directory-style="cream"]) .tool-shelf { border-top: 0; }
+.directory-palette:not([data-directory-style="cream"]) :is(.async-state, .search-context, .directory-end) { background: var(--paper); border-radius: 10px; padding: 20px; }
+.directory-palette .style-option > .style-preview-cream { flex: 0 0 84px; width: 84px; height: 49px; background: #fbf3ea; border: 1px solid #e4d3c2; border-radius: 3px; }
+.favorites-login { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; min-height: 400px; padding: 48px 24px; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; }
+.favorites-login-icon { display: grid; place-items: center; width: 64px; height: 64px; border-radius: 50%; color: var(--accent); background: var(--soft); margin-bottom: 24px; }
+.favorites-login .favorites-login-eyebrow { font-size: 13px; margin: 0 0 8px; }
+.favorites-login h2 { font-size: 28px; font-weight: 600; margin-bottom: 14px; }
+.favorites-login p { max-width: 44ch; color: var(--muted); font-size: 15px; line-height: 1.8; }
+.favorites-login-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; margin: 28px 0 24px; }
+.favorites-login-actions .button { min-height: 44px; }
+.favorites-login small { color: var(--muted); font-size: 12px; line-height: 1.7; }
+@media (max-width: 760px) {
+  .directory-palette:not([data-directory-style="cream"]) :is(.directory-intro, .account-heading) { padding: 18px; }
+  .favorites-login { min-height: 360px; padding: 32px 20px; }
+  .favorites-login-actions { flex-direction: column; width: 100%; max-width: 280px; }
+}

@@ -20,16 +20,17 @@ onBeforeUnmount(() => mobileMedia?.removeEventListener('change', syncViewport))
 const items = computed(() => [
   { path: '', icon: 'chart', name: '仪表盘' }, { path: '/monitoring', icon: 'activity', name: '系统监控' },
   { path: '/tools', icon: 'wrench', name: '工具管理' }, { path: '/categories', icon: 'grid', name: '分类管理' },
-  ...(auth.user.value?.is_superadmin ? [{ path: '/model-accounts', icon: 'key', name: '模型账号' }] : []),
+  ...(auth.user.value?.is_superadmin ? [{ path: '/model-accounts', icon: 'key', name: '模型账号' }, { path: '/model-groups', icon: 'layers', name: '账号分组' }] : []),
   { path: '/users', icon: 'user', name: '用户管理' }, { path: '/usage', icon: 'history', name: '使用记录' },
   { path: '/orders', icon: 'receipt', name: '支付管理' }, { path: '/tickets', icon: 'support', name: '工单管理' },
+  { path: '/announcements', icon: 'bell', name: '公告管理' },
   { path: '/audit', icon: 'shield', name: '操作日志' },
   ...(auth.user.value?.is_superadmin ? [{ path: '/settings', icon: 'settings', name: '系统设置' }] : []),
 ])
 const groups = computed(() => [
   { title: '工作空间', items: items.value.filter(item => ['', '/monitoring', '/tools', '/categories'].includes(item.path)) },
-  { title: '运营管理', items: items.value.filter(item => ['/users', '/usage', '/orders', '/tickets'].includes(item.path)) },
-  { title: '系统管理', items: items.value.filter(item => ['/model-accounts', '/audit', '/settings'].includes(item.path)) },
+  { title: '运营管理', items: items.value.filter(item => ['/users', '/usage', '/orders', '/tickets', '/announcements'].includes(item.path)) },
+  { title: '系统管理', items: items.value.filter(item => ['/model-accounts', '/model-groups', '/audit', '/settings'].includes(item.path)) },
 ])
 const pageName = computed(() => items.value.find(item => route.path === `/admin${item.path}`)?.name || '管理后台')
 function toggleNavigation() {

@@ -49,6 +49,11 @@ $apiProcess = Start-Process -FilePath $pythonExe `
     -RedirectStandardOutput (Join-Path $runtimeRoot "api.out.log") `
     -RedirectStandardError (Join-Path $runtimeRoot "api.err.log")
 try {
+    $workerProcess = Start-Process -FilePath $pythonExe `
+        -ArgumentList @("-m", "tooldawn.image_worker") `
+        -WorkingDirectory $apiRoot -WindowStyle Hidden -PassThru `
+        -RedirectStandardOutput (Join-Path $runtimeRoot "image-worker.out.log") `
+        -RedirectStandardError (Join-Path $runtimeRoot "image-worker.err.log")
     $webProcess = Start-Process -FilePath $nodeExe `
         -ArgumentList @("`"$nuxtEntry`"", "dev", "--host", "127.0.0.1", "--port", "$WebPort") `
         -WorkingDirectory $webRoot -WindowStyle Hidden -PassThru `
@@ -56,9 +61,11 @@ try {
         -RedirectStandardError (Join-Path $runtimeRoot "web.err.log")
 } catch {
     Stop-Process -Id $apiProcess.Id -ErrorAction SilentlyContinue
+    if ($workerProcess) { Stop-Process -Id $workerProcess.Id -ErrorAction SilentlyContinue }
     throw
 }
 Write-Output "Web: http://127.0.0.1:$WebPort"
 Write-Output "API: http://127.0.0.1:$ApiPort/api/docs"
 Write-Output "API PID: $($apiProcess.Id); Web PID: $($webProcess.Id)"
+Write-Output "Image Worker PID: $($workerProcess.Id)"
 Write-Output "Logs: $runtimeRoot"

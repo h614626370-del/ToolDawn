@@ -33,7 +33,7 @@
 @media (max-width: 760px) {
   .header-inner { flex-wrap: wrap; }
   .header-actions { margin-left: auto; flex-wrap: wrap; }
-  .header-actions .account-link span, .header-actions .saved-link > span:not(.saved-count) { display: none; }
+  .header-actions .account-link > span:not(.user-avatar), .header-actions .saved-link > span:not(.saved-count) { display: none; }
   .credit-packages { grid-template-columns: 1fr; }
   .billing-heading h1 { font-size: 24px; }
   .wallet-strip { gap: 12px; }

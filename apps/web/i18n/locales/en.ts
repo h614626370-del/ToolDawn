@@ -1,9 +1,46 @@
+import account from './account-en'
+import studio from './studio-en'
+import images from './images-en'
+import modelGroups from './model-groups-en'
 import payments from './payments-en'
 import ai from './ai-en'
 import operations from './operations-en'
 import directory from './directory-en'
+import announcements from './announcements-en'
 
 export default {
+  "奶油": "Cream",
+  "远山夜色": "Blue mountains",
+  "林间光影": "Forest light",
+  "暮色微光": "Quiet dusk",
+  "晴空海岸": "Open coast",
+  "默认主题 · 温暖纯色，轻松专注": "Default \u00b7 A warm, quiet solid color",
+  "全屏背景 · 层叠远山与深蓝夜空": "Wallpaper \u00b7 Blue mountain ridges at dusk",
+  "全屏背景 · 日光穿过枝叶，舒展安静": "Wallpaper \u00b7 Sunlight and a peaceful forest lake",
+  "全屏背景 · 落日、湖面与柔和暮色": "Wallpaper \u00b7 A still lake under a soft sunset",
+  "全屏背景 · 白色崖岸与碧蓝海面": "Wallpaper \u00b7 White cliffs and turquoise water",
+  "你的常用工具，留在这里": "Keep your go-to tools close",
+  "登录后收藏常用工具，下次回来就能快速找到。": "Sign in to save your favorite tools and find them quickly next time.",
+  "登录并查看收藏": "Sign in to view favorites",
+  "先逛逛工具": "Explore tools first",
+  "收藏保存在当前浏览器，并按登录账号区分。": "Favorites are saved in this browser, separately for each account.",
+
+  ...account,
+  ...studio,
+  ...images,
+  ...modelGroups,
+  ...announcements,
+  '展开左侧导航': 'Expand sidebar',
+  '收起左侧导航': 'Collapse sidebar',
+  '收起导航': 'Collapse sidebar',
+  "本站仅提供 ToolDawn 自有工具。标注“开发中”的工具尚未开放，完成后可在本站工作台使用。": "ToolDawn offers its own tools only. Tools marked Coming soon will become available in an on-site workspace when ready.",
+  "发现": "Discover",
+  "工具分类": "Tool categories",
+  "打开工具导航": "Open tool navigation",
+  "关闭工具导航": "Close tool navigation",
+  "重新加载分类": "Reload categories",
+  "共 {count} 个工具": "{count} tools",
+  "工具列表": "Tool list",
   "站点 Logo": "Site logo",
   "选择预置 Logo，保存后同步应用到前台和后台。": "Choose a preset logo. Save to apply it to the public site and admin area.",
   "锐角疾速": "Sharp velocity",

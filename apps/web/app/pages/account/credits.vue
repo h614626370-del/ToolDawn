@@ -2,7 +2,7 @@
 import type { BillingPage, CreditEntry, CreditPackage, PaymentOrder } from '~/types/billing'
 import type { CheckoutResult, PaymentMethod } from '~/types/payment-provider'
 import { authError } from '~/composables/useAuth'
-definePageMeta({ middleware: 'account' })
+definePageMeta({ middleware: 'account', layout: 'account' })
 const { t } = useI18n()
 useSeoMeta({ title: () => `${t('积分与充值')} · ToolDawn`, robots: 'noindex, nofollow' })
 const auth = useAuth()
@@ -131,14 +131,14 @@ onBeforeUnmount(() => { generation++; pollSequence++; if (timer) clearTimeout(ti
 </script>
 
 <template>
-  <div class="container billing-page">
-    <AccountNav />
-    <NuxtLink to="/account" class="back-link"><AppIcon name="back" :size="16" />{{ $t('我的账户') }}</NuxtLink>
-    <div class="billing-heading"><div><h1>{{ $t('积分与充值') }}</h1><p>{{ $t('查看余额、充值订单和积分变动。') }}</p></div><button class="icon-button" :disabled="pending" :title="$t('刷新')" :aria-label="$t('刷新')" @click="load(); polls = 0; checkOrder()"><AppIcon name="refresh" :size="19" /></button></div>
+  <div class="account-billing">
+
+
+    <AccountHeading title="积分与充值" description="查看余额、充值订单和积分变动。"><button class="icon-button" :disabled="pending" :title="$t('刷新')" :aria-label="$t('刷新')" @click="load(); polls = 0; checkOrder()"><AppIcon name="refresh" :size="19" /></button></AccountHeading>
     <p v-if="returned" role="status" class="billing-notice">{{ returned.status === 'paid' ? t('支付已确认，积分已入账。') : returned.status === 'pending' ? t('正在等待支付确认，积分到账后会自动更新。') : t('订单已结束，尚未入账。') }}</p>
     <p v-else-if="route.query.canceled" role="status" class="billing-notice">{{ $t('你已返回本站，订单状态以支付记录为准。') }}</p>
     <p v-if="actionError" role="alert" class="form-error">{{ actionError }}</p>
-    <AsyncState v-if="error" kind="error" :description="error" @retry="load" />
+    <AsyncState v-if="error" kind="error" :title="$t('暂时无法加载')" :description="error" @retry="load" />
     <AsyncState v-else-if="pending && !packages.items.length && !entries.total && !orders.total" kind="loading" :title="$t('正在读取积分')" />
     <template v-else>
       <section class="wallet-strip" :aria-label="$t('当前积分')"><span class="wallet-icon"><AppIcon name="wallet" :size="28" /></span><div><h2>{{ $t('可用积分') }}</h2><strong>{{ balance.toLocaleString() }}</strong></div><NuxtLink to="/tools" class="text-link">{{ $t('浏览工具') }}<AppIcon name="arrow" :size="17" /></NuxtLink></section>
@@ -157,7 +157,7 @@ onBeforeUnmount(() => { generation++; pollSequence++; if (timer) clearTimeout(ti
         <AdminPagination :total="tab === 'entries' ? entries.total : orders.total" :offset="offset" :limit="20" :busy="pending" @change="offset = $event" />
       </section>
     </template>
-    <AdminDialog v-if="paymentOpen" :title="$t('充值支付')" :busy="!!busy" @close="closePayment">
+    <AccountDialog v-if="paymentOpen" :title="$t('充值支付')" :busy="!!busy" @close="closePayment">
       <div class="payment-checkout">
         <template v-if="!payment">
           <div v-if="offer" class="payment-offer"><strong>{{ money(offer.unit_amount, offer.currency) }}</strong><span>{{ offer.credits.toLocaleString() }} {{ $t('积分') }}</span></div>
@@ -180,6 +180,6 @@ onBeforeUnmount(() => { generation++; pollSequence++; if (timer) clearTimeout(ti
         </template>
         <p v-if="actionError" role="alert" class="form-error">{{ actionError }}</p>
       </div>
-    </AdminDialog>
+    </AccountDialog>
   </div>
 </template>

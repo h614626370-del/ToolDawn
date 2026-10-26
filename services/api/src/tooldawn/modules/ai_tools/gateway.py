@@ -8,7 +8,27 @@ from tooldawn.modules.ai_tools.schemas import RunInput
 
 
 class ModelFailure(Exception):
-    pass
+    def __init__(self, code="invalid_response", *, retryable=False, cooldown=30):
+        super().__init__(code)
+        self.code = code
+        self.retryable = retryable
+        self.cooldown = cooldown
+
+    @classmethod
+    def from_status(cls, status, retry_after=None):
+        if status in (401, 403):
+            return cls("authentication", retryable=True, cooldown=300)
+        if status == 404:
+            return cls("model_unavailable", retryable=True, cooldown=300)
+        if status == 429:
+            try:
+                delay = max(60, min(300, int(retry_after or 60)))
+            except (ValueError, TypeError):
+                delay = 60
+            return cls("rate_limited", retryable=True, cooldown=delay)
+        if status >= 500:
+            return cls("upstream_unavailable", retryable=True)
+        return cls("request_rejected")
 
 
 def messages(tool: TextTool, data: RunInput) -> list[dict]:
@@ -62,7 +82,9 @@ class ModelGateway:
                     },
                 ) as response:
                     if response.status_code != 200:
-                        raise ModelFailure()
+                        raise ModelFailure.from_status(
+                            response.status_code, response.headers.get("retry-after")
+                        )
                     body = bytearray()
                     async for chunk in response.aiter_bytes():
                         body.extend(chunk)
@@ -79,9 +101,9 @@ class ModelGateway:
             ):
                 raise ModelFailure()
             return content.strip()
+        except (httpx.HTTPError, TimeoutError):
+            raise ModelFailure("network", retryable=True) from None
         except (
-            httpx.HTTPError,
-            TimeoutError,
             ValueError,
             KeyError,
             IndexError,

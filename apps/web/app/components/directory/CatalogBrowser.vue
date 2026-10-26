@@ -2,8 +2,13 @@
 const { t } = useI18n()
 import type { Category, ToolPage } from '~/types/catalog'
 const props = withDefaults(defineProps<{ home?: boolean }>(), { home: false })
-const { selected } = useDirectoryStyle()
 const filters = useCatalogFilters()
+const auth = useAuth()
+const route = useRoute()
+const favoritesChecking = computed(() => filters.favoritesOnly.value && !auth.loaded.value)
+const favoritesGuest = computed(() => filters.favoritesOnly.value && auth.loaded.value && !auth.user.value)
+const favoritesBlocked = computed(() => favoritesChecking.value || favoritesGuest.value)
+const loginDestination = computed(() => ({ path: '/login', query: { next: route.fullPath } }))
 const { slugs, ready, storageAvailable } = useFavorites()
 const apiQuery = computed(() => ({
   q: filters.query.value,
@@ -22,15 +27,16 @@ const visibleTools = computed(() => {
   return isHomeOverview.value ? items.filter(item => item.featured) : items
 })
 const available = computed(() => {
-  const choices: Record<string, string[]> = { cream: ['text-summary', 'copy-rewrite'], plum: ['email-writer', 'text-translate'], library: ['text-polish', 'text-summary'] }
   const items = (data.value?.items || []).filter(tool => tool.status === 'available' && tool.kind === 'internal')
-  return (choices[selected.value] || []).flatMap(slug => items.filter(tool => tool.slug === slug))
+  return ['text-summary', 'copy-rewrite'].flatMap(slug => items.filter(tool => tool.slug === slug))
 })
-const grouped = computed(() => isHomeOverview.value && ['olive', 'library'].includes(selected.value))
+const grouped = computed(() => isHomeOverview.value)
 const toolGroups = computed(() => (categories.value || []).map(category => ({ category, tools: visibleTools.value.filter(tool => tool.category === category.slug) })).filter(group => group.tools.length))
 const heading = computed(() => filters.favoritesOnly.value ? t('我的收藏') : filters.query.value ? t('搜索结果') : filters.category.value ? t(categoryMap.value[filters.category.value]?.name || '分类工具') : isHomeOverview.value ? t('精选工具') : t('全部工具'))
 const emptyTitle = computed(() => filters.favoritesOnly.value && !slugs.value.length ? t('还没有收藏工具') : t('没有找到合适的工具'))
 const emptyDescription = computed(() => filters.favoritesOnly.value && !slugs.value.length ? t('点击工具旁的收藏图标，将它留在这里。') : t('换一个关键词，或查看全部分类。'))
+const hasSearchFilters = computed(() => !!filters.query.value || !!filters.category.value)
+function clearSearchFilters() { return filters.update({ q: undefined, category: undefined }) }
 
 async function retry() {
   await Promise.all([refresh(), refreshCategories()])
@@ -38,36 +44,39 @@ async function retry() {
 </script>
 
 <template>
-  <div class="container directory" :class="{ 'home-overview': isHomeOverview }">
+  <div class="container directory" :class="{ 'home-overview': isHomeOverview, 'catalog-listing': !isHomeOverview }">
     <div class="directory-frame">
-    <aside v-if="selected === 'library'" class="directory-sidebar">
-      <span class="sidebar-label">{{ $t('探索工具') }}</span>
-      <CategoryTabs :categories="categories || []" :selected="filters.category.value" @select="filters.update({ category: $event || undefined })" />
-      <NuxtLink to="/tools?saved=1" class="sidebar-favorites"><AppIcon name="bookmark" :size="16" />{{ $t('我的收藏') }}</NuxtLink>
-      <p class="sidebar-note">{{ $t('把时间留给想做的事。') }}</p>
-    </aside>
+    <aside class="catalog-sidebar"><DirectoryNavigation collapsible /></aside>
     <div class="directory-body">
-    <div class="overview-stage" :class="{ 'with-carousel': showHighlights }">
       <section class="directory-intro" aria-labelledby="directory-title">
-        <div><h1 id="directory-title">{{ home ? $t('发现好工具') : filters.favoritesOnly.value ? $t('我的收藏') : $t('全部工具') }}</h1><p>{{ home ? $t('把时间留给想做的事。') : filters.favoritesOnly.value ? $t('常用的工具，随时回来。') : $t('按用途寻找，找到就开始。') }}</p></div>
-        <SearchBar :model-value="filters.query.value" :busy="status === 'pending'" @search="filters.update({ q: $event || undefined })" />
-        <CategoryTabs v-if="selected === 'midnight' && showHighlights" :categories="categories || []" :selected="filters.category.value" @select="filters.update({ category: $event || undefined })" />
+        <div><h1 id="directory-title">{{ isHomeOverview ? $t('发现好工具') : heading }}</h1><p>{{ isHomeOverview ? $t('把时间留给想做的事。') : filters.favoritesOnly.value ? $t('常用的工具，随时回来。') : $t('按用途寻找，找到就开始。') }}</p></div>
+        <SearchBar v-if="!favoritesBlocked" :model-value="filters.query.value" :busy="status === 'pending'" @search="filters.update({ q: $event || undefined })" />
       </section>
+    <div v-if="showHighlights" class="overview-stage with-carousel">
       <template v-if="showHighlights">
         <FeatureCarousel :tools="data?.items || []" />
-        <aside v-if="['cream', 'plum', 'library'].includes(selected) && available.length" class="quick-tools">
+        <aside v-if="available.length" class="quick-tools">
           <h2>{{ $t('随手就能用') }}<AppIcon name="arrow" :size="16" /></h2>
           <NuxtLink v-for="tool in available" :key="tool.slug" :to="`/tools/${tool.slug}`" class="quick-tool"><ToolArtwork :tool="tool" eager /><span><strong>{{ $t(tool.name) }}</strong><small>{{ $t(tool.summary) }}</small></span></NuxtLink>
         </aside>
       </template>
     </div>
-    <CategoryTabs v-if="selected !== 'library' && !(selected === 'midnight' && showHighlights)" :categories="categories || []" :selected="filters.category.value" @select="filters.update({ category: $event || undefined })" />
-    <section class="tool-section" aria-labelledby="tools-heading" :aria-busy="status === 'pending'">
+    <AsyncState v-if="favoritesChecking" kind="loading" :title="$t('正在加载')" />
+    <section v-else-if="favoritesGuest" class="favorites-login" aria-labelledby="favorites-login-title">
+      <span class="favorites-login-icon"><AppIcon name="bookmark" :size="30" /></span>
+      <p class="favorites-login-eyebrow">{{ $t('你的常用工具，留在这里') }}</p>
+      <h2 id="favorites-login-title">{{ $t('请先登录') }}</h2>
+      <p>{{ $t('登录后收藏常用工具，下次回来就能快速找到。') }}</p>
+      <div class="favorites-login-actions"><NuxtLink :to="loginDestination" class="button primary">{{ $t('登录并查看收藏') }}<AppIcon name="arrow" :size="16" /></NuxtLink><NuxtLink to="/tools" class="button secondary">{{ $t('先逛逛工具') }}</NuxtLink></div>
+      <small>{{ $t('收藏保存在当前浏览器，并按登录账号区分。') }}</small>
+    </section>
+    <section v-else class="tool-section" aria-labelledby="tools-heading" :aria-busy="status === 'pending'">
       <div class="section-heading">
-        <h2 id="tools-heading" class="section-title"><AppIcon :name="filters.favoritesOnly.value ? 'bookmark' : 'compass'" :size="23" />{{ heading }}<span v-if="!error" class="result-count">{{ visibleTools.length }}</span></h2>
+        <h2 id="tools-heading" class="section-title" :class="{ 'sr-only': !isHomeOverview }"><AppIcon :name="filters.favoritesOnly.value ? 'bookmark' : 'compass'" :size="23" />{{ heading }}<span v-if="!error && isHomeOverview" class="result-count">{{ visibleTools.length }}</span></h2>
+        <p v-if="!isHomeOverview" class="catalog-results" role="status">{{ status === 'pending' ? $t('正在加载数据') : error || categoryError ? $t('工具列表') : $t('共 {count} 个工具', { count: visibleTools.length }) }}</p>
         <NuxtLink v-if="isHomeOverview" to="/tools" class="text-link">{{ $t('查看全部') }}<AppIcon name="arrow" :size="16" /></NuxtLink>
         <div v-else class="result-actions">
-          <button v-if="filters.active.value" class="text-button" @click="filters.clear"><AppIcon name="close" :size="15" />{{ $t('清除筛选') }}</button>
+          <button v-if="hasSearchFilters" class="text-button" @click="clearSearchFilters"><AppIcon name="close" :size="15" />{{ $t('清除筛选') }}</button>
           <label class="sort-control"><span class="sr-only">{{ $t('排序方式') }}</span><select :value="filters.sort.value" @change="filters.update({ sort: ($event.target as HTMLSelectElement).value })"><option value="recommended">{{ $t('推荐排序') }}</option><option value="recent">{{ $t('最近更新') }}</option></select></label>
         </div>
       </div>
@@ -76,7 +85,8 @@ async function retry() {
       <AsyncState v-if="error || categoryError" kind="error" @retry="retry" />
       <AsyncState v-else-if="status === 'pending' || (filters.favoritesOnly.value && !ready)" kind="loading" />
       <AsyncState v-else-if="!visibleTools.length" kind="empty" :title="emptyTitle" :description="emptyDescription">
-        <button v-if="filters.active.value" class="button secondary" @click="filters.clear">{{ $t('清除筛选') }}</button>
+        <NuxtLink v-if="filters.favoritesOnly.value && !slugs.length" to="/tools" class="button primary">{{ $t('去发现工具') }}<AppIcon name="arrow" :size="16" /></NuxtLink>
+        <button v-else-if="hasSearchFilters" class="button secondary" @click="clearSearchFilters">{{ $t('清除筛选') }}</button>
       </AsyncState>
       <div v-else-if="grouped" class="tool-shelves">
         <section v-for="group in toolGroups" :key="group.category.slug" class="tool-shelf" :aria-labelledby="`shelf-${group.category.slug}`">

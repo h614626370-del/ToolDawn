@@ -1,4 +1,10 @@
 export default {
+  '当前位置': 'Breadcrumb',
+  '让想法变成合适的表达': 'Find the right words',
+  '填写内容并选择偏好，生成结果后即可复制或下载。': 'Add your content and preferences. Once generated, copy or download your result.',
+  '选择记录可再次查看结果': 'Select a record to view its result again',
+  '浏览其他工具': 'Explore other tools',
+
   '长文摘要': 'Text summary',
   '提炼重点，让长内容更容易读。': 'Find the essentials in longer content.',
   '邮件助手': 'Email assistant',
@@ -20,7 +26,7 @@ export default {
   '跟进': 'Follow-up', '忠实': 'Literal', '幽默': 'Lighthearted', '诗意': 'Poetic',
   '每次 {cost} 积分': '{cost} credits per generation', '免费使用': 'Free to use',
   '读取余额中': 'Loading balance', '余额 {balance}': 'Balance: {balance}',
-  'AI 服务尚未配置，请稍后再试。': 'AI tools are not available yet. Please check back later.',
+  '暂不可用': 'Currently unavailable',
   '填入示例': 'Try an example', '清空输入': 'Clear input',
   '表达风格': 'Style', '输出语言': 'Output language', '补充要求（选填）': 'Additional requirements (optional)',
   '例如：面向新用户，保留专业术语，控制在 200 字以内…': 'For example: for new users, keep technical terms, under 200 words…',
