@@ -1,6 +1,6 @@
 # 本地 PostgreSQL 与 Redis
 
-2026-10-24 按用户要求从公网连接切换到 WSL Ubuntu。原远程业务库通过一致性快照复制到本地，远程实例保持原状，之后两个数据库不会自动同步。
+本地开发使用 WSL Ubuntu 中独立的 PostgreSQL 与 Redis。本地与远程数据库不会自动同步。
 
 | 服务 | Windows 地址 | WSL 容器 |
 | --- | --- | --- |
@@ -15,7 +15,7 @@ WSL 配置目录 `/opt/tooldawn-infra`，Compose 项目 `tooldawn-local`。复�
 
 在 Windows 项目根目录执行 `scripts/dev.ps1`，脚本识别本地连接配置后会先启动 WSL Compose，再启动前后端。手动检查基础服务：
 
-网站默认端口为 3000。本机 8000 当前无法绑定，因此 API 使用 8001；脚本在未显式指定 API 端口且默认端口无法绑定时自动尝试 8001，并同步配置前端转发地址。也可以明确执行 `scripts/dev.ps1 -ApiPort 8001`。
+网站默认端口为 3000，API 默认端口为 8000；脚本在未显式指定 API 端口且默认端口无法绑定时自动尝试 8001，并同步配置前端转发地址。也可以明确执行 `scripts/dev.ps1 -ApiPort 8001`。
 
 ```powershell
 wsl -d Ubuntu -u root -- sh -lc 'cd /opt/tooldawn-infra && docker compose ps'
@@ -26,9 +26,7 @@ wsl -d Ubuntu -u root -- sh -lc 'cd /opt/tooldawn-infra && docker compose up -d 
 
 ## 数据与验证
 
-迁移保留了业务账号、工具、设置和 PostgreSQL 会话，认证及加密根密钥未变。Redis 从空缓存开始，旧限流计数不迁移。
-
-本机 `.runtime/remote-api.env` 保存切换前的连接配置，`.runtime/remote-to-local-20261024.dump` 保存迁移时的业务库快照，均仅当前 Windows 用户可读写并被 Git 忽略。不要把旧快照直接覆盖到已有数据的库。
+迁移数据时应保留业务记录及对应的认证、加密配置。连接配置和备份快照仅保存在受限的本地位置，不加入版本控制；不要把旧快照直接覆盖到已有数据的库。
 
 在 `services/api` 下运行以下命令可验证本地专用测试库（脚本名字沿用原项目，实际连接目标取自 `.env`）：
 
