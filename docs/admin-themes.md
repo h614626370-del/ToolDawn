@@ -11,13 +11,13 @@
 
 ## 参考与设计材料
 
-参考用户本机 Sub2API 源码中的 `frontend/tailwind.config.js`、`AppLayout.vue`、`AppSidebar.vue`，以及 `dofastted/vm2api` 主仓库的 `web/src/styles/theme.css`、侧栏源码和 `docs/images/console-vms.png`。只借鉴视觉组织，没有复制对方业务代码或品牌素材。GitHub 代理 127.0.0.1:7897 当时不可用，公开参考通过直连读取。
+参考 Sub2API 源码中的 `frontend/tailwind.config.js`、`AppLayout.vue`、`AppSidebar.vue`，以及 `dofastted/vm2api` 主仓库的 `web/src/styles/theme.css`、侧栏源码和 `docs/images/console-vms.png`。只借鉴视觉组织，没有复制对方业务代码或品牌素材。
 
 两张生图原型使用用户已授权的 imagegen CLI / API，模型 `gpt-image-2`，提示词与原图保存在 `output/imagegen/admin-styles-v2/`。原型中的数据为示例，产品实际值始终由 API 返回。
 
 `output/admin-style-preview/sub2api.png` 与 `vm2api.png` 为真正的前端页面截图，使用独立浏览器拦截提供示例数据；仅用于视觉验证，没有向服务端提交示例数据。实际登录的浏览器也验证了系统设置页的两套风格。
 
-## 验证
+## 历史验证记录
 
 - 两套风格覆盖仪表盘及其余 10 个后台页面，桌面无横向溢出。
 - 320、390、768px 布局，英文窄屏、移动端菜单打开/路由后关闭、桌面折叠与刷新记忆。
@@ -25,4 +25,6 @@
 - 设置页输入未保存内容后连续切换，两套风格均保留输入。
 - 模型账号编辑弹窗使用深色表单，Escape 可关闭，未提交数据。
 - 浏览器未捕获页面异常；测试拦截器记录的业务写请求为零。
-- `npm run typecheck`、`npm run build`；日志在 `.runtime/admin-themes-*.log`。现有 Node 24.0.0 仍有工具链兼容性提示。
+- `npm run typecheck`、`npm run build`；日志在 `.runtime/admin-themes-*.log`。
+
+以上为主题实现阶段的验证记录，不代表后续版本已经复测。修改主题后需重新检查实际页面数量、响应式布局与构建结果。

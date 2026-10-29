@@ -2,9 +2,9 @@
 
 ## 运行配置
 
-在已有远程连接的基础上运行 `scripts/setup-auth.ps1`，生成本地 `TOOLDAWN_AUTH_SECRET`。该脚本保留已有密钥；不要提交 `.env`。更换该密钥会使已发出的验证码失效，已有会话不受影响。
+先在被忽略的 `services/api/.env` 中配置 PostgreSQL 与 Redis 连接，再从项目根目录运行 `scripts/setup-auth.ps1`，生成本地 `TOOLDAWN_AUTH_SECRET`。本地基础服务见 [本地配置](local-infra.md)。脚本保留已有密钥；不要提交 `.env`。更换该密钥会使已发出的验证码失效，已有会话不受影响。
 
-执行 `uv run alembic upgrade head` 创建 `users`、`email_challenges`、`sessions` 三张表，随后重启 API。身份服务要求 PostgreSQL、Redis 和登录密钥同时配置。
+在 `services/api` 执行 `uv run alembic upgrade head` 应用全部迁移，随后重启 API。身份服务要求 PostgreSQL、Redis 和登录密钥同时配置。
 
 默认文件邮件模式将邮件写入 `.runtime/mail/`；仅用于开发，不提供公开预览接口。文件含验证码，应定期清理。验证码不会出现在接口响应或应用日志中。
 
@@ -38,13 +38,15 @@ Nuxt 开发转发层覆盖客户端提供的 `X-Forwarded-For`，使用真实连
 
 ## 运维与边界
 
-在 `services/api` 运行 `uv run python -m tooldawn.cli create-admin --email <自己的邮箱>` 授予管理员身份。此命令可重复执行，不创建密码，也不自动启用已禁用账户。管理员仍使用邮箱验证码登录，随后从账户页进入 `/admin`，或直接访问 `/admin/tools`、`/admin/categories`、`/admin/users`。
+普通管理员可在 `services/api` 通过 `uv run python -m tooldawn.cli create-admin --email <自己的邮箱>` 授权。此命令可重复执行，不创建密码，也不自动启用已禁用账户；可使用邮箱验证码登录，设置密码后也可使用密码登录。
+
+超级管理员由 API 在启用初始化且身份服务配置完整时创建，随机初始邮箱和密码保存在被忽略的 `.runtime/initial-admin.json`（路径可配置）。首次登录必须修改初始凭据。超级管理员使用密码认证，不开放邮箱验证码登录或找回密码；可在账户安全页面修改邮箱和密码。后台模型账号、分组及支付配置等敏感操作使用 `require_superadmin` 校验。
 
 管理 API 使用 `require_admin` 逐请求鉴权，并禁止缓存。写操作校验来源；普通用户和未登录用户分别返回 403 和 401。禁用普通用户会在同一事务撤销全部会话、作废该邮箱已发出的验证码，并写入审计。恢复后需要重新获取验证码登录。后台禁止禁用任何管理员，不开放角色修改。
 
 目录编辑使用不可变 slug 与递增版本号，旧版本提交返回 409。工具上下架独立于执行状态；只有已接入执行器并配置所需服务的工具才能实际运行。管理操作与 `audit_logs` 同事务提交，日志保存操作者、动作、目标和提交字段名，不保存验证码、会话令牌或表单值。管理员可在 `/admin/audit` 查询操作日志。
 
-`uv run python -m tooldawn.cli cleanup-auth` 删除过期验证码和会话；目前未自动调度。用户账户暂不提供自助注销和邮箱修改。收藏仍是浏览器本地数据。
+`uv run python -m tooldawn.cli cleanup-auth` 删除过期验证码和会话；目前未自动调度。普通用户暂不提供自助注销和邮箱修改。收藏按账号区分，保存在当前浏览器，不跨设备同步。
 
 参考了用户提供的 sub2api 项目中邮件冷却时间、原子限流与故障拒绝思路，本模块按 Python 技术栈独立实现，未复制其 Go 源码。
 

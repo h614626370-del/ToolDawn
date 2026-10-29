@@ -4,7 +4,14 @@
 
 ## 运行
 
-在 `services/api` 执行迁移后启动 API，并独立运行 `python -m tooldawn.image_worker`。Windows 本地 `scripts/dev.ps1` 已一并启动 Worker；线上也需要用进程管理器保持 Worker 运行。新环境需按 README 执行目录种子初始化。
+配置好数据库连接并安装后端依赖后，在 `services/api` 执行以下命令应用迁移并初始化目录；种子导入保留已有 slug 的记录：
+
+```powershell
+uv run alembic upgrade head
+uv run python -m tooldawn.cli seed-catalog
+```
+
+随后启动 API，并独立运行 `uv run python -m tooldawn.image_worker`。Windows 本地 `scripts/dev.ps1` 已一并启动 Worker；线上也需要用进程管理器保持 Worker 运行。
 
 - 文生图通过 `/v1/images/generations`；图生图通过 multipart `/v1/images/edits`。一次一张 PNG，可选择 1024×1024、1536×1024、1024×1536。账号分别声明 `image_generate`、`image_edit` 能力及模型；工具仍绑定一个聚合账号组。实际支持范围由接入账号决定。
 - 质量 low／medium／high 对应基础积分的 1／2／4 倍，由服务端计算。透明背景通过 `background=transparent` 请求，并检查输出确实包含透明像素；不满足时按失败退分。
